@@ -1,0 +1,66 @@
+<resources>
+
+    <!-- Base application theme. -->
+    <style name="AppTheme" parent="Theme.AppCompat.Light.NoActionBar">
+        <!-- Customize your theme here. -->
+    </style>
+
+    <style name="text_calendar_today">
+        <item name="android:textStyle">bold|italic</item>
+        <item name="android:textSize">18sp</item>
+    </style>
+
+    <style name="text_calendar_thismonth">
+        <item name="android:textStyle">bold</item>
+        <item name="android:textSize">15sp</item>
+    </style>
+
+    <style name="text_calendar_othermonth">
+        <item name="android:textStyle">italic</item>
+        <item name="android:textSize">13sp</item>
+        <item name="android:alpha">30</item>
+        <item name="android:clickable">false</item>
+    </style>
+
+    <style name="text_bi14">
+        <item name="android:textStyle">bold|italic</item>
+        <item name="android:textSize">14sp</item>
+    </style>
+
+    <style name="text_bi10">
+        <item name="android:textStyle">bold|italic</item>
+        <item name="android:textSize">10sp</item>
+    </style>
+
+    <style name="text_bi30_cenAlign">
+        <item name="android:textStyle">bold|italic</item>
+        <item name="android:textSize">30sp</item>
+        <item name="android:gravity">center</item>
+    </style>
+
+    <style name="text_bi20">
+        <item name="android:textStyle">bold|italic</item>
+        <item name="android:textSize">20sp</item>
+    </style>
+
+    <style name="text_bi30">
+        <item name="android:textStyle">bold|italic</item>
+        <item name="android:textSize">30sp</item>
+    </style>
+
+    <style name="text_nv_bi15black">
+        <item name="android:textStyle">bold|italic</item>
+        <item name="android:textSize">15sp</item>
+        <item name="android:textColor">@color/black</item>
+    </style>
+
+    <style name="AppTheme.NoActionBar">
+        <item name="windowActionBar">false</item>
+        <item name="windowNoTitle">true</item>
+    </style>
+
+    <style name="AppTheme.AppBarOverlay" parent="ThemeOverlay.AppCompat.Dark.ActionBar"/>
+
+    <style name="AppTheme.PopupOverlay" parent="ThemeOverlay.AppCompat.Light"/>
+
+</resources>

@@ -1,0 +1,17 @@
+<resources>
+    <string name="app_name">NewBabySeater</string>
+    <string name="action_school">어린이집</string>
+    <string name="action_notification">알림</string>
+    <string name="action_calendar">일정</string>
+    <string name="action_update">어린이집 정보 업데이트</string>
+    <string name="action_budget">예산설정</string>
+    <string name="action_bills">지출내역</string>
+    <string name="action_show_diarylist">다이어리 모두 보기</string>
+    <string name="add_thing">일정추가</string>
+    <string name="event_icon">Event icon</string>
+    <string name="month">월</string>
+    <string name="api_key">AIzaSyDBWwnDDkAEaA9uaWcLGcjHCqnCanmbxkk</string>
+    <string name="navigation_drawer_open">Open navigation drawer</string>
+    <string name="navigation_drawer_close">Close navigation drawer</string>
+
+</resources>
