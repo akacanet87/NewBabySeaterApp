@@ -8,6 +8,8 @@ import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.database.sqlite.SQLiteDatabase;
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.Message;
 import android.support.annotation.NonNull;
 import android.support.design.widget.CoordinatorLayout;
 import android.support.design.widget.NavigationView;
@@ -31,24 +33,26 @@ import android.widget.LinearLayout;
 import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.TimePicker;
+import android.widget.Toast;
 
 import com.sds.study.newbabyseaterapp.BabySeaterSqlHelper;
+import com.sds.study.newbabyseaterapp.CheckPermission;
 import com.sds.study.newbabyseaterapp.R;
 import com.sds.study.newbabyseaterapp.calendar.budget.BudgetListAdapter;
-import com.sds.study.newbabyseaterapp.calendar.budget.SmsReceiver;
 import com.sds.study.newbabyseaterapp.calendar.calendar.CalendarFragment;
 import com.sds.study.newbabyseaterapp.calendar.calendar.DailyLayout;
 import com.sds.study.newbabyseaterapp.calendar.calendar.OnMonthChangeListener;
 import com.sds.study.newbabyseaterapp.calendar.calendar.OneDayLayout;
 import com.sds.study.newbabyseaterapp.calendar.calendar.OneMonthFragment;
+import com.sds.study.newbabyseaterapp.calendar.diary.Diary;
 import com.sds.study.newbabyseaterapp.calendar.diary.DiaryItem;
 import com.sds.study.newbabyseaterapp.calendar.diary.DiaryListAdapter;
 import com.sds.study.newbabyseaterapp.calendar.diary.DiaryTag;
-import com.sds.study.newbabyseaterapp.calendar.diary.Diary;
 import com.sds.study.newbabyseaterapp.calendar.schedule.Schedule;
 import com.sds.study.newbabyseaterapp.calendar.schedule.ScheduleItem;
 import com.sds.study.newbabyseaterapp.calendar.schedule.ScheduleListAdapter;
 import com.sds.study.newbabyseaterapp.calendar.schedule.ScheduleTag;
+import com.sds.study.newbabyseaterapp.school.SchoolActivity;
 
 import java.util.Calendar;
 
@@ -82,10 +86,18 @@ public class CalendarActivity extends AppCompatActivity
     DiaryListAdapter diaryListAdapter;
     ScheduleListAdapter scheduleListAdapter;
     BudgetListAdapter budgetListAdapter;
+    CheckPermission calendarPermission, schoolPermission;
 
     public static int TODAY_YEAR;
     public static int TODAY_MONTH;
     public static int TODAY_DATE;
+
+    private boolean isBackKeyPressed = false;           // flag
+    private long currentTimeByMillis = 0;               // calculate time interval
+
+    private static final int MSG_TIMER_EXPIRED = 1;     // switch - key
+    private static final int BACKKEY_TIMEOUT = 2;       // define interval
+    private static final int MILLIS_IN_SEC = 1000;
 
     public static final int DIARY_NUM = 1000;
     public static final int SCHEDULE_NUM = 1001;
@@ -99,6 +111,9 @@ public class CalendarActivity extends AppCompatActivity
     public static final int NEW_ITEM = 3000;
     public static final int EDIT_ITEM = 3001;
     public static final int SMS_PERMISSION = 7000;
+    public static final int COARSE_LOC_PERMISSION = 7001;
+    public static final int FINE_LOC_PERMISSION = 7002;
+    public static final int OVERAY_PERMISSION = 7003;
 
     int today_year, today_month, today_date;
     int this_hour, this_minute, my_hour, my_minute;
@@ -129,7 +144,10 @@ public class CalendarActivity extends AppCompatActivity
         NavigationView navigationView = (NavigationView) findViewById(R.id.nav_view);
         navigationView.setNavigationItemSelectedListener(this);
 
-        checkPermission( Manifest.permission.RECEIVE_SMS, SMS_PERMISSION );
+        /*calendarPermission = new CheckPermission(this);
+        schoolPermission = new CheckPermission(this);
+        calendarPermission.checkPermissions(Manifest.permission.RECEIVE_SMS, SMS_PERMISSION);*/
+        checkPermission(Manifest.permission.RECEIVE_SMS, SMS_PERMISSION);
 
         initCalendar();
 
@@ -232,16 +250,26 @@ public class CalendarActivity extends AppCompatActivity
 
     }
 
-    public void checkPermission( String manifestPermission, int permissionNum ){
+    public boolean checkPermission(String manifestPermission, int permissionNum){
 
         Log.d(TAG, "checkPermission 진입");
 
-        int permission= ContextCompat.checkSelfPermission(this, manifestPermission);
+        boolean isPassed = false;
+
+        int permission = ContextCompat.checkSelfPermission(this, manifestPermission);
         if(permission == PackageManager.PERMISSION_DENIED){
-            ActivityCompat.requestPermissions(this,new String[]{
+
+            ActivityCompat.requestPermissions(this, new String[]{
                     manifestPermission
-            },permissionNum);
+            }, permissionNum);
+
+        }else{
+
+            isPassed = !isPassed;
+
         }
+
+        return isPassed;
 
     }
 
@@ -250,11 +278,36 @@ public class CalendarActivity extends AppCompatActivity
 
         switch(requestCode){
 
-            case SMS_PERMISSION :
+            case SMS_PERMISSION:
 
-                if(permissions.length>0 && grantResults[0]==PackageManager.PERMISSION_DENIED){
-                    showAlertMsg("문자 관련 권한 안내","권한을 부여하지 않으면 일부 기능을 사용 할 수 없습니다.");
+                if(permissions.length > 0 && grantResults[0] == PackageManager.PERMISSION_DENIED){
+                    showAlertMsg("문자 관련 권한 안내", "권한을 부여하지 않으면 일부 기능을 사용 할 수 없습니다.");
                 }
+
+                break;
+
+            /*case FINE_LOC_PERMISSION :
+
+                if(permissions.length>0 && grantResults[0]== PackageManager.PERMISSION_DENIED){
+                    showAlertMsg("위치 관련 권한 안내1","권한을 부여하지 않으면 일부 기능을 사용 할 수 없습니다.");
+                    Log.d(TAG, "FINE_LOC_PERMISSION 체크 완료");
+                }
+
+                break;*/
+
+            case COARSE_LOC_PERMISSION:
+
+                if(permissions.length > 0 && grantResults[0] == PackageManager.PERMISSION_DENIED){
+                    showAlertMsg("위치 관련 권한 안내", "권한을 부여하지 않으면 일부 기능을 사용 할 수 없습니다.");
+                    Log.d(TAG, "COARSE_LOC_PERMISSION 체크 완료");
+
+                    return;
+
+                }
+
+                showAlertMsg("안내", "상단의 나침반 아이콘을 클릭하여 위치를 재설정해 주세요.");
+
+                break;
 
         }
 
@@ -280,7 +333,23 @@ public class CalendarActivity extends AppCompatActivity
 
             if(inc_layout_calendar.getVisibility() == View.VISIBLE){
 
-                super.onBackPressed();
+                if(!isBackKeyPressed){
+                    // first click
+                    isBackKeyPressed = !isBackKeyPressed;
+
+                    currentTimeByMillis = Calendar.getInstance().getTimeInMillis();
+                    Toast.makeText(this, "\'뒤로\'버튼을 한번 더 누르시면 종료됩니다.", Toast.LENGTH_SHORT).show();
+
+                    startTimer();
+
+                }else if(isBackKeyPressed){
+                    // second click : 2초 이내면 종료! 아니면 아무것도 안한다.
+                    isBackKeyPressed = !isBackKeyPressed;
+                    if(Calendar.getInstance().getTimeInMillis() <= (currentTimeByMillis + (BACKKEY_TIMEOUT * MILLIS_IN_SEC))){
+                        finish();
+                    }
+
+                }
 
             }else if(inc_layout_diarylist.getVisibility() == View.VISIBLE){
 
@@ -314,6 +383,18 @@ public class CalendarActivity extends AppCompatActivity
         switch(item.getItemId()){
 
             case R.id.btn_school:
+
+                Log.d(TAG, "스쿨버튼 클릭");
+
+                boolean isCoarsePassed = checkPermission(Manifest.permission.ACCESS_COARSE_LOCATION, COARSE_LOC_PERMISSION);
+                //boolean isFinePassed = checkPermission(Manifest.permission.ACCESS_FINE_LOCATION, FINE_LOC_PERMISSION);
+
+                Intent intent = new Intent(this, SchoolActivity.class);
+                startActivity(intent);
+                Log.d(TAG, "인텐트 넘김");
+
+                finish();
+
                 break;
 
         }
@@ -332,7 +413,6 @@ public class CalendarActivity extends AppCompatActivity
                 break;
             case R.id.nav_btn_billslist:
                 break;
-            //case R.id.nav_btn_getdiarylist : break;
 
         }
 
@@ -344,10 +424,10 @@ public class CalendarActivity extends AppCompatActivity
     @Override
     public void onItemClick(AdapterView<?> adapterView, View view, int i, long l){
 
-        if(adapterView==daily_diary_list){
+        if(adapterView == daily_diary_list){
 
-            Log.d(TAG, l+"은 뭘까");
-            Log.d(TAG, i+" 번째 다이어리 아이템 클릭");
+            Log.d(TAG, l + "은 뭘까");
+            Log.d(TAG, i + " 번째 다이어리 아이템 클릭");
             DiaryItem diaryItem = (DiaryItem) view;
             Diary diary = diaryItem.getDiary();
             setLayoutVisible(inc_layout_diarylist, inc_layout_diary);
@@ -376,10 +456,10 @@ public class CalendarActivity extends AppCompatActivity
             Log.d(TAG, "date_id : " + date_id);
             Log.d(TAG, "diary_id : " + diary_id);
 
-        }else if(adapterView==daily_schedule_list){
+        }else if(adapterView == daily_schedule_list){
 
-            Log.d(TAG, l+"은 뭘까");
-            Log.d(TAG, i+" 번째 스케줄 아이템 클릭");
+            Log.d(TAG, l + "은 뭘까");
+            Log.d(TAG, i + " 번째 스케줄 아이템 클릭");
             ScheduleItem scheduleItem = (ScheduleItem) view;
             Schedule schedule = scheduleItem.getSchedule();
             setLayoutVisible(inc_layout_schedulelist, inc_layout_schedule);
@@ -467,7 +547,7 @@ public class CalendarActivity extends AppCompatActivity
 
                 refreshDiaryContents();
                 imm.hideSoftInputFromWindow(inc_layout_diary.findViewById(R.id.diary_txt_title).getWindowToken(), 0);
-                if( inc_layout_diary.findViewById(R.id.diary_btn_save).getVisibility()==View.GONE ){
+                if(inc_layout_diary.findViewById(R.id.diary_btn_save).getVisibility() == View.GONE){
 
                     inc_layout_diary.findViewById(R.id.diary_btn_save).setVisibility(View.VISIBLE);
                     inc_layout_diary.findViewById(R.id.diary_btn_edit).setVisibility(View.GONE);
@@ -478,16 +558,16 @@ public class CalendarActivity extends AppCompatActivity
 
                 break;
 
-            case R.id.btn_delete_diary_item :
+            case R.id.btn_delete_diary_item:
 
                 Log.d(TAG, "다이어리 삭제 버튼 클릭");
                 DiaryTag diaryTag = (DiaryTag) view.getTag();
                 Diary item_diary = diaryTag.getDiary();
 
-                Log.d(TAG, "key_num은 "+item_diary.getDiary_id());
-                Log.d(TAG, "Date_id는 "+item_diary.getDate_id());
-                Log.d(TAG, "Title은 "+item_diary.getTitle());
-                Log.d(TAG, "Content는 "+item_diary.getContent());
+                Log.d(TAG, "key_num은 " + item_diary.getDiary_id());
+                Log.d(TAG, "Date_id는 " + item_diary.getDate_id());
+                Log.d(TAG, "Title은 " + item_diary.getTitle());
+                Log.d(TAG, "Content는 " + item_diary.getContent());
 
                 showConfirmMsg("다이어리 삭제", "정말 삭제하시겠습니까?", DELETE_DIARY, item_diary);
 
@@ -522,7 +602,7 @@ public class CalendarActivity extends AppCompatActivity
 
                 break;
 
-            case R.id.schedule_btn_edit :
+            case R.id.schedule_btn_edit:
 
                 updateScheduleContents();
                 refreshScheduleContents();
@@ -537,7 +617,7 @@ public class CalendarActivity extends AppCompatActivity
 
                 refreshScheduleContents();
                 imm.hideSoftInputFromWindow(inc_layout_schedule.findViewById(R.id.schedule_txt_content).getWindowToken(), 0);
-                if( inc_layout_schedule.findViewById(R.id.schedule_btn_save).getVisibility()==View.GONE ){
+                if(inc_layout_schedule.findViewById(R.id.schedule_btn_save).getVisibility() == View.GONE){
 
                     inc_layout_schedule.findViewById(R.id.schedule_btn_save).setVisibility(View.VISIBLE);
                     inc_layout_schedule.findViewById(R.id.schedule_btn_edit).setVisibility(View.GONE);
@@ -547,8 +627,8 @@ public class CalendarActivity extends AppCompatActivity
                 getScheduleList(date_id);
 
                 break;
-            
-            case R.id.btn_delete_schedule_item :
+
+            case R.id.btn_delete_schedule_item:
 
                 Log.d(TAG, "스케줄 삭제 버튼 클릭");
                 ScheduleTag scheduleTag = (ScheduleTag) view.getTag();
@@ -559,7 +639,7 @@ public class CalendarActivity extends AppCompatActivity
                 int date_id = item_schedule.getDate_id();
                 String content = item_schedule.getContent();
                 boolean isAlarmOff = item_schedule.isAlarmOff();
-                Log.d(TAG, "view_num은 "+scheduleTag.getView_num());
+                Log.d(TAG, "view_num은 " + scheduleTag.getView_num());
                 Log.d(TAG, "schedule_id는 " + schedule_id);
                 Log.d(TAG, "hour는 " + hour);
                 Log.d(TAG, "minute는 " + minute);
@@ -567,7 +647,7 @@ public class CalendarActivity extends AppCompatActivity
                 Log.d(TAG, "content는 " + content);
                 Log.d(TAG, "isAlarmOff는 " + isAlarmOff);
                 showConfirmMsg("스케줄 삭제", "정말 삭제하시겠습니까?", DELETE_SCHEDULE, item_schedule);
-                
+
                 break;
 
             case R.id.layout_schedule_timepicker:
@@ -579,15 +659,15 @@ public class CalendarActivity extends AppCompatActivity
             case R.id.schedule_btn_alarm:
 
                 Log.d(TAG, "schedule_btn_alarm 눌림");
-                Log.d(TAG, "view = "+view);
+                Log.d(TAG, "view = " + view);
                 setAlarmImg(view);
 
                 break;
 
-            case R.id.btn_alarm_schedule_item :
+            case R.id.btn_alarm_schedule_item:
 
                 Log.d(TAG, "btn_alarm_schedule_item 눌림");
-                Log.d(TAG, "view = "+view);
+                Log.d(TAG, "view = " + view);
 
                 setAlarmImg(view);
 
@@ -645,10 +725,10 @@ public class CalendarActivity extends AppCompatActivity
         String content = schedule_txt_content.getText().toString();
 
         scheduleDTO.setDate_id(date_id);
-        if(my_hour==0){
-            my_hour=this_hour;
+        if(my_hour == 0){
+            my_hour = this_hour;
         }
-        if(my_minute==0){
+        if(my_minute == 0){
             my_minute = this_minute;
         }
         scheduleDTO.setHour(my_hour);
@@ -680,7 +760,7 @@ public class CalendarActivity extends AppCompatActivity
         Log.d(TAG, "수정된 content : " + content);
         Log.d(TAG, "수정된 date_id : " + date_id);
         Log.d(TAG, "수정된 diary_id : " + diary_id);
-        
+
         showConfirmMsg("다이어리 수정", "수정하시겠습니까?", UPDATE_DIARY, diaryDTO);
 
     }
@@ -741,9 +821,9 @@ public class CalendarActivity extends AppCompatActivity
 
         ScheduleTag tag = (ScheduleTag) imgBtn.getTag();
 
-        Log.d(TAG, "tag는 "+tag);
+        Log.d(TAG, "tag는 " + tag);
 
-        if(tag==null){
+        if(tag == null){
 
             showAlertMsg("알람켜기", "저장하시면 알람이 자동으로 켜집니다.");
 
@@ -944,5 +1024,24 @@ public class CalendarActivity extends AppCompatActivity
         alert.setTitle(title).setMessage(msg).show();
 
     }
+
+    public void startTimer(){
+
+        backTimerHandler.sendEmptyMessageDelayed(MSG_TIMER_EXPIRED, BACKKEY_TIMEOUT * MILLIS_IN_SEC);
+    }
+
+    public Handler backTimerHandler = new Handler(){
+
+        public void handleMessage(Message msg){
+
+            switch(msg.what){
+                case MSG_TIMER_EXPIRED:{
+                    isBackKeyPressed = false;
+                }
+                break;
+            }
+
+        }
+    };
 
 }

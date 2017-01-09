@@ -58,7 +58,7 @@ public class BabySeaterSqlHelper extends SQLiteOpenHelper{
         budget_sql.append(",content varchar(100)");
         budget_sql.append(")");
 
-        sqLiteDatabase.execSQL(budget_sql.toString());
+        sqLiteDatabase.execSQL(budget_sql.toString());*/
 
         StringBuffer school_sql=new StringBuffer();
 
@@ -75,7 +75,7 @@ public class BabySeaterSqlHelper extends SQLiteOpenHelper{
         school_sql.append(",cctv_num integer");
         school_sql.append(")");
 
-        sqLiteDatabase.execSQL(school_sql.toString());*/
+        sqLiteDatabase.execSQL(school_sql.toString());
 
         Log.d(TAG,"데이터 베이스 구축");
     }
@@ -84,8 +84,8 @@ public class BabySeaterSqlHelper extends SQLiteOpenHelper{
     public void onUpgrade(SQLiteDatabase sqLiteDatabase, int i, int i1) {
         sqLiteDatabase.execSQL("drop table if exists diary");
         sqLiteDatabase.execSQL("drop table if exists schedule");
-        /*sqLiteDatabase.execSQL("drop table if exists budget");
-        sqLiteDatabase.execSQL("drop table if exists school");*/
+        /*sqLiteDatabase.execSQL("drop table if exists budget");*/
+        sqLiteDatabase.execSQL("drop table if exists school");
         onCreate(sqLiteDatabase);
         Log.d(TAG,"upgrade");
     }

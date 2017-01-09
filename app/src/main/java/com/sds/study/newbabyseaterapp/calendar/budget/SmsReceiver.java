@@ -4,7 +4,6 @@ package com.sds.study.newbabyseaterapp.calendar.budget;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
-import android.content.IntentSender;
 import android.os.Bundle;
 import android.telephony.SmsMessage;
 import android.util.Log;
@@ -33,7 +32,6 @@ public class SmsReceiver extends BroadcastReceiver{
 
                 Intent startIntent = new Intent(context, CalendarActivity.class);
                 startIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-                context.startActivity(startIntent);
 
                 // 번들에 포함된 문자 데이터를 객체 배열로 받아온다
                 Object[] pdusObj = (Object[]) bundle.get("pdus");
@@ -57,6 +55,10 @@ public class SmsReceiver extends BroadcastReceiver{
                     sms.append(smsMessage.getMessageBody());
 
                 }
+
+                startIntent.putExtra("sms", sms.toString());
+
+                context.startActivity(startIntent);
 
                 msgCut(sms.toString(), context);
 
