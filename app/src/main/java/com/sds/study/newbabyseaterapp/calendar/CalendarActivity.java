@@ -1,12 +1,18 @@
 package com.sds.study.newbabyseaterapp.calendar;
 
+import android.Manifest;
 import android.app.Dialog;
 import android.app.TimePickerDialog;
 import android.content.DialogInterface;
+import android.content.Intent;
+import android.content.pm.PackageManager;
 import android.database.sqlite.SQLiteDatabase;
 import android.os.Bundle;
+import android.support.annotation.NonNull;
 import android.support.design.widget.CoordinatorLayout;
 import android.support.design.widget.NavigationView;
+import android.support.v4.app.ActivityCompat;
+import android.support.v4.content.ContextCompat;
 import android.support.v4.view.GravityCompat;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBarDrawerToggle;
@@ -28,6 +34,8 @@ import android.widget.TimePicker;
 
 import com.sds.study.newbabyseaterapp.BabySeaterSqlHelper;
 import com.sds.study.newbabyseaterapp.R;
+import com.sds.study.newbabyseaterapp.calendar.budget.BudgetListAdapter;
+import com.sds.study.newbabyseaterapp.calendar.budget.SmsReceiver;
 import com.sds.study.newbabyseaterapp.calendar.calendar.CalendarFragment;
 import com.sds.study.newbabyseaterapp.calendar.calendar.DailyLayout;
 import com.sds.study.newbabyseaterapp.calendar.calendar.OnMonthChangeListener;
@@ -58,8 +66,7 @@ public class CalendarActivity extends AppCompatActivity
     EditText schedule_txt_content;
     LinearLayout layout_schedule_timepicker;
 
-    ListView daily_schedule_list;
-    ListView daily_diary_list;
+    ListView daily_schedule_list, daily_diary_list, daily_budget_list;
 
     Calendar calendar = Calendar.getInstance();
     CoordinatorLayout layoutContainer;
@@ -74,22 +81,24 @@ public class CalendarActivity extends AppCompatActivity
     Schedule scheduleDTO;
     DiaryListAdapter diaryListAdapter;
     ScheduleListAdapter scheduleListAdapter;
+    BudgetListAdapter budgetListAdapter;
 
     public static int TODAY_YEAR;
     public static int TODAY_MONTH;
     public static int TODAY_DATE;
 
-    public static final int DIARY_NUM = 2220;
-    public static final int SCHEDULE_NUM = 2221;
-    public static final int INSERT_DIARY = 1000;
-    public static final int DELETE_DIARY = 1001;
-    public static final int UPDATE_DIARY = 1002;
-    public static final int INSERT_SCHEDULE = 1100;
-    public static final int DELETE_SCHEDULE = 1101;
-    public static final int UPDATE_SCHEDULE = 1102;
-    public static final int ALARM_BTN = 1002;
+    public static final int DIARY_NUM = 1000;
+    public static final int SCHEDULE_NUM = 1001;
+    public static final int INSERT_DIARY = 2000;
+    public static final int DELETE_DIARY = 2001;
+    public static final int UPDATE_DIARY = 2002;
+    public static final int INSERT_SCHEDULE = 2100;
+    public static final int DELETE_SCHEDULE = 2101;
+    public static final int UPDATE_SCHEDULE = 2102;
+    public static final int ALARM_BTN = 9000;
     public static final int NEW_ITEM = 3000;
     public static final int EDIT_ITEM = 3001;
+    public static final int SMS_PERMISSION = 7000;
 
     int today_year, today_month, today_date;
     int this_hour, this_minute, my_hour, my_minute;
@@ -119,6 +128,8 @@ public class CalendarActivity extends AppCompatActivity
 
         NavigationView navigationView = (NavigationView) findViewById(R.id.nav_view);
         navigationView.setNavigationItemSelectedListener(this);
+
+        checkPermission( Manifest.permission.RECEIVE_SMS, SMS_PERMISSION );
 
         initCalendar();
 
@@ -204,7 +215,7 @@ public class CalendarActivity extends AppCompatActivity
 
         });
 
-        Log.d(TAG, "initCalendar 완료");
+        //Log.d(TAG, "initCalendar 완료");
 
     }
 
@@ -215,8 +226,37 @@ public class CalendarActivity extends AppCompatActivity
         calendarDAO = new CalendarDAO(this, db);
         diaryListAdapter = new DiaryListAdapter(this, db);
         scheduleListAdapter = new ScheduleListAdapter(this, db);
+        budgetListAdapter = new BudgetListAdapter(this, db);
 
-        Log.d(TAG, "initDB 완료");
+        //Log.d(TAG, "initDB 완료");
+
+    }
+
+    public void checkPermission( String manifestPermission, int permissionNum ){
+
+        Log.d(TAG, "checkPermission 진입");
+
+        int permission= ContextCompat.checkSelfPermission(this, manifestPermission);
+        if(permission == PackageManager.PERMISSION_DENIED){
+            ActivityCompat.requestPermissions(this,new String[]{
+                    manifestPermission
+            },permissionNum);
+        }
+
+    }
+
+    @Override
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults){
+
+        switch(requestCode){
+
+            case SMS_PERMISSION :
+
+                if(permissions.length>0 && grantResults[0]==PackageManager.PERMISSION_DENIED){
+                    showAlertMsg("문자 관련 권한 안내","권한을 부여하지 않으면 일부 기능을 사용 할 수 없습니다.");
+                }
+
+        }
 
     }
 
