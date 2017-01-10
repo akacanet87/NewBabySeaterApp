@@ -35,7 +35,7 @@ public class SchoolActivity extends AppCompatActivity implements OnMapReadyCallb
     GoogleMap googleMap;
     LatLng myPoint;
     GpsInfo gps;
-    //SchoolDAO schoolDAO;
+    SchoolDAO schoolDAO;
 
     SchoolActivity schoolActivity;
 
@@ -50,7 +50,7 @@ public class SchoolActivity extends AppCompatActivity implements OnMapReadyCallb
         TAG = this.getClass().getName()+"/Canet";
         schoolActivity = this;
         setContentView(R.layout.activity_school);
-        //schoolDAO = new SchoolDAO(this, db);
+        schoolDAO = new SchoolDAO(this, db);
 
         initGps();
 
@@ -95,6 +95,15 @@ public class SchoolActivity extends AppCompatActivity implements OnMapReadyCallb
 
     }
 
+    @Override
+    public void onBackPressed(){
+
+        Intent intent = new Intent(this, CalendarActivity.class);
+        startActivity(intent);
+        finish();
+
+    }
+
     public void btnSchoolClick(View view){
 
         switch(view.getId()){
@@ -109,17 +118,16 @@ public class SchoolActivity extends AppCompatActivity implements OnMapReadyCallb
 
             case R.id.btn_update_db :
 
-                /*if(schoolDAO.selectOne()==0){
+                if(schoolDAO.selectOne()==0){
 
                     CreateSchoolDBAsyncTask dbAsyncTask = new CreateSchoolDBAsyncTask(this, db);
                     dbAsyncTask.execute();
 
                 }else{
 
-                    //updateConfirmMsg("안내", "데이터베이스 업데이트를 실행하시겠습니까?\n(5분 정도 소요됩니다.)");
-                    showAlertMsg();
+                    updateConfirmMsg("안내", "데이터베이스 업데이트를 실행하시겠습니까?\n(5분 정도 소요됩니다.)");
 
-                }*/
+                }
 
 
                 break;
@@ -142,7 +150,7 @@ public class SchoolActivity extends AppCompatActivity implements OnMapReadyCallb
 
     }
 
-    /*public void updateConfirmMsg(String title, String msg){
+    public void updateConfirmMsg(String title, String msg){
 
         AlertDialog.Builder alert = new AlertDialog.Builder(this);
 
@@ -166,6 +174,6 @@ public class SchoolActivity extends AppCompatActivity implements OnMapReadyCallb
                     }
                 }).show();
 
-    }*/
+    }
 
 }

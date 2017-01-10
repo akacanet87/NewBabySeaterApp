@@ -8,6 +8,7 @@ import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.database.sqlite.SQLiteDatabase;
 import android.os.Bundle;
+import android.os.Environment;
 import android.os.Handler;
 import android.os.Message;
 import android.support.annotation.NonNull;
@@ -55,7 +56,18 @@ import com.sds.study.newbabyseaterapp.calendar.schedule.ScheduleTag;
 import com.sds.study.newbabyseaterapp.school.SchoolActivity;
 import com.sds.study.newbabyseaterapp.school.SchoolDAO;
 
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Calendar;
+
+import jxl.Cell;
+import jxl.Sheet;
+import jxl.Workbook;
+import jxl.read.biff.BiffException;
+import jxl.read.biff.WorkbookParser;
 
 public class CalendarActivity extends AppCompatActivity
         implements NavigationView.OnNavigationItemSelectedListener, AdapterView.OnItemClickListener{
@@ -115,6 +127,7 @@ public class CalendarActivity extends AppCompatActivity
     public static final int COARSE_LOC_PERMISSION = 7001;
     public static final int FINE_LOC_PERMISSION = 7002;
     public static final int OVERAY_PERMISSION = 7003;
+    public static final int READ_EXST_PERMISSION = 7004;
 
     int today_year, today_month, today_date;
     int this_hour, this_minute, my_hour, my_minute;
@@ -248,6 +261,13 @@ public class CalendarActivity extends AppCompatActivity
         scheduleListAdapter = new ScheduleListAdapter(this, db);
         budgetListAdapter = new BudgetListAdapter(this, db);
 
+        /*if(schoolDAO.selectOne()==0){
+
+            readExcelFile();
+
+        }*/
+
+
         //Log.d(TAG, "initDB 완료");
 
     }
@@ -284,6 +304,16 @@ public class CalendarActivity extends AppCompatActivity
 
                 if(permissions.length > 0 && grantResults[0] == PackageManager.PERMISSION_DENIED){
                     showAlertMsg("문자 관련 권한 안내", "권한을 부여하지 않으면 일부 기능을 사용 할 수 없습니다.");
+                }
+
+                break;
+
+            case READ_EXST_PERMISSION :
+
+                if(permissions.length > 0 && grantResults[0] == PackageManager.PERMISSION_DENIED){
+                    showAlertMsg("내장 디렉토리 읽기 권한 안내", "권한을 부여하지 않으면 일부 기능을 사용 할 수 없습니다.");
+
+                    return;
                 }
 
                 break;
@@ -395,12 +425,23 @@ public class CalendarActivity extends AppCompatActivity
 
                 boolean isCoarsePassed = checkPermission(Manifest.permission.ACCESS_COARSE_LOCATION, COARSE_LOC_PERMISSION);
                 boolean isFinePassed = checkPermission(Manifest.permission.ACCESS_FINE_LOCATION, FINE_LOC_PERMISSION);
+                boolean isReadExPassed = checkPermission(Manifest.permission.READ_EXTERNAL_STORAGE, READ_EXST_PERMISSION);
 
-                if(schoolDAO.selectOne()==0){
+                if(isReadExPassed){
 
-                    showAlertMsg("안내", "어린이집 데이터베이스 생성중...\n(최초 1회만 실행합니다.)");
+                    if(isCoarsePassed||isFinePassed){
 
-                }else if(isCoarsePassed){
+                        Intent intent = new Intent(this, SchoolActivity.class);
+                        startActivity(intent);
+                        Log.d(TAG, "인텐트 넘김");
+
+                        finish();
+
+                    }
+
+                }
+
+                /*else if(isCoarsePassed){
 
                     Intent intent = new Intent(this, SchoolActivity.class);
                     startActivity(intent);
@@ -416,7 +457,7 @@ public class CalendarActivity extends AppCompatActivity
 
                     finish();
 
-                }
+                }*/
 
                 break;
 
@@ -824,20 +865,6 @@ public class CalendarActivity extends AppCompatActivity
 
     }
 
-    private TimePickerDialog.OnTimeSetListener myTimeSetListener
-            = new TimePickerDialog.OnTimeSetListener(){
-
-        public void onTimeSet(TimePicker view, int hourOfDay, int minute){
-
-            my_hour = hourOfDay;
-            my_minute = minute;
-
-            setTimePickersTime(hourOfDay, minute);
-
-        }
-
-    };
-
     public View setAlarmImg(View view){
 
         ImageButton imgBtn = (ImageButton) view;
@@ -1052,6 +1079,62 @@ public class CalendarActivity extends AppCompatActivity
 
         backTimerHandler.sendEmptyMessageDelayed(MSG_TIMER_EXPIRED, BACKKEY_TIMEOUT * MILLIS_IN_SEC);
     }
+
+    public void readExcelFile(){
+
+        String fileName = "schools.xls";
+        ArrayList<Cell[]> cellList = new ArrayList<>();
+
+        Log.d(TAG, "readExcelFile시작");
+
+        try{
+
+            Workbook workbook = Workbook.getWorkbook(getBaseContext().getResources().getAssets().open(fileName));
+            Sheet sheet = workbook.getSheet(0);
+            Cell[] cells=null;
+
+            for(int i=0 ; i<sheet.getColumns(); i++){
+                cells = sheet.getColumn(i);
+                cellList.add(cells);
+            }
+
+            Log.d(TAG, "셀 읽기 완료");
+
+            for(int i=0 ; i<cellList.size(); i++){
+
+                Cell[] cells1 = cellList.get(i);
+
+                for(int j = 0; j < cells1.length ; j++){
+
+                    String content = cells1[j].getContents();
+                    Log.d(TAG, "content : " + content );
+
+                }
+
+            }
+
+
+        }catch(IOException e){
+            e.printStackTrace();
+        }catch(BiffException e){
+            e.printStackTrace();
+        }
+
+    }
+
+    private TimePickerDialog.OnTimeSetListener myTimeSetListener
+            = new TimePickerDialog.OnTimeSetListener(){
+
+        public void onTimeSet(TimePicker view, int hourOfDay, int minute){
+
+            my_hour = hourOfDay;
+            my_minute = minute;
+
+            setTimePickersTime(hourOfDay, minute);
+
+        }
+
+    };
 
     public Handler backTimerHandler = new Handler(){
 
