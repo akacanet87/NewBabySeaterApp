@@ -4,13 +4,14 @@ package com.sds.study.newbabyseaterapp.school;
 public class School{
 
     private int school_id;
-    String school_name;
-    String location;
-    String address;
-    String total_kids;
-    String num_teacher;
-    String tel_school;
-    String num_CCTV;
+    private String school_name;
+    private String lng;
+    private String lon;
+    private String address;
+    private String total_kids;
+    private String num_teacher;
+    private String tel_school;
+    private String num_CCTV;
 
     public int getSchool_id(){
 
@@ -32,14 +33,24 @@ public class School{
         this.school_name = school_name;
     }
 
-    public String getLocation(){
+    public String getLng(){
 
-        return location;
+        return lng;
     }
 
-    public void setLocation(String location){
+    public void setLng(String lng){
 
-        this.location = location;
+        this.lng = lng;
+    }
+
+    public String getLon(){
+
+        return lon;
+    }
+
+    public void setLon(String lon){
+
+        this.lon = lon;
     }
 
     public String getAddress(){

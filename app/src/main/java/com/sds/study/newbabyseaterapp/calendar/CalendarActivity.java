@@ -53,6 +53,7 @@ import com.sds.study.newbabyseaterapp.calendar.schedule.ScheduleItem;
 import com.sds.study.newbabyseaterapp.calendar.schedule.ScheduleListAdapter;
 import com.sds.study.newbabyseaterapp.calendar.schedule.ScheduleTag;
 import com.sds.study.newbabyseaterapp.school.SchoolActivity;
+import com.sds.study.newbabyseaterapp.school.SchoolDAO;
 
 import java.util.Calendar;
 
@@ -81,12 +82,12 @@ public class CalendarActivity extends AppCompatActivity
     BabySeaterSqlHelper sqlHelper;    //데이터 베이스 구축
     public static SQLiteDatabase db;  //데이터 베이스 쿼리문 제어
     CalendarDAO calendarDAO;
+    SchoolDAO schoolDAO;
     Diary diaryDTO;
     Schedule scheduleDTO;
     DiaryListAdapter diaryListAdapter;
     ScheduleListAdapter scheduleListAdapter;
     BudgetListAdapter budgetListAdapter;
-    CheckPermission calendarPermission, schoolPermission;
 
     public static int TODAY_YEAR;
     public static int TODAY_MONTH;
@@ -242,6 +243,7 @@ public class CalendarActivity extends AppCompatActivity
         sqlHelper = new BabySeaterSqlHelper(this, "babyseater.sqlite", null, 1);
         db = sqlHelper.getWritableDatabase();
         calendarDAO = new CalendarDAO(this, db);
+        schoolDAO = new SchoolDAO(this, db);
         diaryListAdapter = new DiaryListAdapter(this, db);
         scheduleListAdapter = new ScheduleListAdapter(this, db);
         budgetListAdapter = new BudgetListAdapter(this, db);
@@ -286,14 +288,19 @@ public class CalendarActivity extends AppCompatActivity
 
                 break;
 
-            /*case FINE_LOC_PERMISSION :
+            case FINE_LOC_PERMISSION :
 
                 if(permissions.length>0 && grantResults[0]== PackageManager.PERMISSION_DENIED){
                     showAlertMsg("위치 관련 권한 안내1","권한을 부여하지 않으면 일부 기능을 사용 할 수 없습니다.");
                     Log.d(TAG, "FINE_LOC_PERMISSION 체크 완료");
+
+                    return;
+
                 }
 
-                break;*/
+                //showAlertMsg("안내", "상단의 나침반 아이콘을 클릭하여 위치를 재설정해 주세요.");
+
+                break;
 
             case COARSE_LOC_PERMISSION:
 
@@ -305,7 +312,7 @@ public class CalendarActivity extends AppCompatActivity
 
                 }
 
-                showAlertMsg("안내", "상단의 나침반 아이콘을 클릭하여 위치를 재설정해 주세요.");
+                //showAlertMsg("안내", "상단의 나침반 아이콘을 클릭하여 위치를 재설정해 주세요.");
 
                 break;
 
@@ -387,13 +394,29 @@ public class CalendarActivity extends AppCompatActivity
                 Log.d(TAG, "스쿨버튼 클릭");
 
                 boolean isCoarsePassed = checkPermission(Manifest.permission.ACCESS_COARSE_LOCATION, COARSE_LOC_PERMISSION);
-                //boolean isFinePassed = checkPermission(Manifest.permission.ACCESS_FINE_LOCATION, FINE_LOC_PERMISSION);
+                boolean isFinePassed = checkPermission(Manifest.permission.ACCESS_FINE_LOCATION, FINE_LOC_PERMISSION);
 
-                Intent intent = new Intent(this, SchoolActivity.class);
-                startActivity(intent);
-                Log.d(TAG, "인텐트 넘김");
+                if(schoolDAO.selectOne()==0){
 
-                finish();
+                    showAlertMsg("안내", "어린이집 데이터베이스 생성중...\n(최초 1회만 실행합니다.)");
+
+                }else if(isCoarsePassed){
+
+                    Intent intent = new Intent(this, SchoolActivity.class);
+                    startActivity(intent);
+                    Log.d(TAG, "인텐트 넘김");
+
+                    finish();
+
+                }else if(isFinePassed){
+
+                    Intent intent = new Intent(this, SchoolActivity.class);
+                    startActivity(intent);
+                    Log.d(TAG, "인텐트 넘김");
+
+                    finish();
+
+                }
 
                 break;
 

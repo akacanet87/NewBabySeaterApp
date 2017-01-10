@@ -7,6 +7,8 @@ import android.os.AsyncTask;
 import android.support.v7.app.AlertDialog;
 import android.util.Log;
 
+import com.google.gson.Gson;
+
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -14,6 +16,7 @@ import org.json.JSONObject;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.io.Reader;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
@@ -30,9 +33,11 @@ public class CreateSchoolDBAsyncTask extends AsyncTask<String, Integer, String>{
     SQLiteDatabase db;
     HttpURLConnection con;
     URL url;
-    ArrayList<School> schoolsInfo;
+    ArrayList<School> schools;
     BufferedReader buffR;
     ProgressDialog progress;
+
+    JsonInfo jsonInfo;
     
     String TAG;
     String json;
@@ -48,7 +53,6 @@ public class CreateSchoolDBAsyncTask extends AsyncTask<String, Integer, String>{
         this.context = context;
         this.db = db;
         TAG = this.getClass().getName()+"/Canet";
-        progress = new ProgressDialog(context);
     
     }
 
@@ -57,8 +61,11 @@ public class CreateSchoolDBAsyncTask extends AsyncTask<String, Integer, String>{
     protected void onPreExecute(){
 
         super.onPreExecute();
+        Log.d(TAG, "onPreExecute시작");
+
+        progress = new ProgressDialog(context);
         progress.setProgressStyle(ProgressDialog.STYLE_SPINNER);
-        progress.setMessage("어린이집 데이터베이스를 받는 중입니다..");
+        progress.setMessage("어린이집 데이터베이스를 받는 중입니다...");
         progress.show();
         
     }
@@ -69,39 +76,40 @@ public class CreateSchoolDBAsyncTask extends AsyncTask<String, Integer, String>{
         Log.d(TAG, "doInBackground 실행");
 
         json = getJson();
-        //parseJson(json);
+        Log.d(TAG, json);
 
         return json;
-        
+
     }
 
     @Override
     protected void onPostExecute(String s){
 
         Log.d(TAG, "onPostExecute 실행");
-        Log.d(TAG, s);
+        //Log.d(TAG, s);
+        String newJson = null;
 
-        if(s.contains(errorCode)){
+        if(json.contains(errorCode)||json==null){
 
             showAlertMsg("안내","데이터베이스를 받아오는데 실패하였습니다.\n잠시 후 다시 시도해 주세요.");
-            return;
+            progress.dismiss();
 
         }else{
 
-            parseJson(s);
             progress.dismiss();
 
-            super.onPostExecute(s);
-
         }
+
+        super.onPostExecute(s);
 
     }
 
     public String getJson(){
 
-        String string_url = api_address + "?serviceKey=" + key + "&s_page=1" + "&s_list=" + maxListSize + "&type=json" + "&numOfRows=1" + "&pageNo=1";
+        String string_url = api_address + "?serviceKey=" + key + "&s_page=1" + "&s_list=" + maxListSize + "&type=json" + "&numOfRows=" + 1 + "&pageNo=1";
 
         StringBuffer sb = new StringBuffer();
+        Gson gson = new Gson();
 
         try{
 
@@ -115,14 +123,37 @@ public class CreateSchoolDBAsyncTask extends AsyncTask<String, Integer, String>{
             if(responseCode != HttpURLConnection.HTTP_OK) return null;
 
             buffR = new BufferedReader(new InputStreamReader(con.getInputStream(), "euc-kr"));
-            String input = null;
-            sb = new StringBuffer();
 
-            while((input = buffR.readLine()) != null){
-                sb.append(input);
+            String data = null;
+
+            while((data=buffR.readLine()) != null){
+
+                sb.append(data);
+
             }
 
-            Log.d(TAG, "파싱성공");
+            if(!sb.toString().contains(errorCode)){
+
+                //Log.d(TAG, "sb.toString() : "+sb.toString());
+                Log.d(TAG, "파싱성공");
+                //String corrected = "[\"schools\":"+sb.+"]";
+                //Log.d(TAG, "corrected : "+corrected);
+                sb.toString().replace("[","");
+                sb.toString().replace("]","");
+
+                StringBuffer newSB = new StringBuffer();
+                newSB.append("[\"schools\":");
+                newSB.append(sb.toString());
+                newSB.append("]");
+                jsonInfo = gson.fromJson(sb.toString(), JsonInfo.class);
+                String name = jsonInfo.getSchoolInfos().get(jsonInfo.getSchoolInfos().size()).school_name;
+
+                Log.d(TAG, "jsonInfo.getSchoolInfos().size() : " + jsonInfo.getSchoolInfos().size());
+                Log.d(TAG, "name : " + name);
+
+                Log.d(TAG, "gson파싱");
+
+            }
 
         }catch(MalformedURLException e){
             e.printStackTrace();
@@ -155,18 +186,20 @@ public class CreateSchoolDBAsyncTask extends AsyncTask<String, Integer, String>{
 
         Log.d(TAG, "파싱시작");
 
+        Log.d(TAG, "트라이문 진입");
+
         try{
-            Log.d(TAG, "트라이문 진입");
             array = new JSONArray(json);
+        }catch(JSONException e){
+            e.printStackTrace();
+        }
 
-            JSONObject jsonObject = new JSONObject(json);
-
-
+        /*try{
 
             Log.d(TAG, "포문 전");
 
 
-            /*for(int i = 0; i < array.length(); i++){
+            *//*for(int i = 0; i < array.length(); i++){
                 if(array.get(i) == null){
                     break;
                 }
@@ -187,14 +220,14 @@ public class CreateSchoolDBAsyncTask extends AsyncTask<String, Integer, String>{
 
                 db.execSQL(sql,new String[]{addr,school_name,lat,lng,schoolbus,max_stu_num,teacher_num,call_num,cctv_num});
 
-            }*/
+            }*//*
 
             Log.d(TAG, "list_kindergarten 길이 :" + Integer.toString(schoolsInfo.size()));
             Log.d(TAG, "array의 길이 :" + Integer.toString(array.length()));
 
         }catch(JSONException e){
             e.printStackTrace();
-        }
+        }*/
     }
 
     public void showAlertMsg(String title, String msg){
