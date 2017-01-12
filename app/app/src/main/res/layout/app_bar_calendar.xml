@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="utf-8"?>
+<android.support.design.widget.CoordinatorLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/layoutContainer"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:fitsSystemWindows="true"
+    tools:context="com.sds.study.newbabyseaterapp.calendar.CalendarActivity">
+
+    <android.support.design.widget.AppBarLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:theme="@style/AppTheme.AppBarOverlay">
+
+        <android.support.v7.widget.Toolbar
+            android:id="@+id/toolbar"
+            android:layout_width="match_parent"
+            android:layout_height="?attr/actionBarSize"
+            android:background="@color/bluish"
+            app:popupTheme="@style/AppTheme.PopupOverlay"/>
+
+    </android.support.design.widget.AppBarLayout>
+
+    <include
+        android:id="@+id/inc_layout_calendar"
+        layout="@layout/layout_calendar"
+        android:visibility="visible"/>
+
+    <include
+        android:id="@+id/inc_layout_diarylist"
+        layout="@layout/layout_diarylist"
+        android:visibility="gone"/>
+
+    <include
+        android:id="@+id/inc_layout_diary"
+        layout="@layout/layout_add_diary"
+        android:visibility="gone"/>
+
+    <include
+        android:id="@+id/inc_layout_schedulelist"
+        layout="@layout/layout_schedulelist"
+        android:visibility="gone"/>
+
+    <include
+        android:id="@+id/inc_layout_schedule"
+        layout="@layout/layout_add_schedule"
+        android:visibility="gone"/>
+
+</android.support.design.widget.CoordinatorLayout>

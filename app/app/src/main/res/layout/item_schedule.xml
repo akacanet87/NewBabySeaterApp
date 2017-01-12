@@ -1,0 +1,87 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/layout_item_schedule"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="horizontal">
+
+    <LinearLayout
+        android:layout_width="0dp"
+        android:layout_height="match_parent"
+        android:layout_weight="9"
+        android:orientation="vertical">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:layout_weight="1"
+            android:orientation="horizontal">
+
+            <TextView
+                android:id="@+id/schedule_item_txt_hour"
+                style="@style/text_bi20"
+                android:layout_width="0dp"
+                android:layout_height="match_parent"
+                android:layout_marginRight="10dp"
+                android:layout_weight="7"
+                android:gravity="center_vertical|right"
+                android:text="12"/>
+
+            <TextView
+                style="@style/text_bi20"
+                android:layout_width="0dp"
+                android:layout_height="match_parent"
+                android:layout_weight="1"
+                android:gravity="center"
+                android:text=":"/>
+
+            <TextView
+                android:id="@+id/schedule_item_txt_minute"
+                style="@style/text_bi20"
+                android:layout_width="0dp"
+                android:layout_height="match_parent"
+                android:layout_marginLeft="10dp"
+                android:layout_weight="7"
+                android:gravity="center_vertical|left"
+                android:text="25"/>
+
+        </LinearLayout>
+
+        <TextView
+            android:id="@+id/schedule_item_txt_content"
+            style="@style/text_bi10"
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:layout_marginLeft="10dp"
+            android:layout_weight="1"
+            android:ellipsize="end"
+            android:gravity="center_vertical|left"
+            android:maxLines="1"
+            android:text="26"/>
+
+    </LinearLayout>
+
+    <ImageButton
+        android:id="@+id/btn_alarm_schedule_item"
+        android:layout_width="0dp"
+        android:layout_height="match_parent"
+        android:layout_weight="1"
+        android:background="@color/btnBackground"
+        android:onClick="btnCalendarClick"
+        android:padding="5dp"
+        android:scaleType="centerInside"
+        android:src="@drawable/alarm"/>
+
+    <ImageButton
+        android:id="@+id/btn_delete_schedule_item"
+        android:layout_width="0dp"
+        android:layout_height="match_parent"
+        android:layout_weight="1"
+        android:background="@color/btnBackground"
+        android:onClick="btnCalendarClick"
+        android:padding="5dp"
+        android:scaleType="centerInside"
+        android:src="@drawable/delete"/>
+
+</LinearLayout>
