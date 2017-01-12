@@ -35,10 +35,8 @@ import android.widget.TextView;
 import android.widget.TimePicker;
 import android.widget.Toast;
 
-import com.sds.study.newbabyseaterapp.R;
-
 import com.sds.study.newbabyseaterapp.BabySeaterSqlHelper;
-
+import com.sds.study.newbabyseaterapp.R;
 import com.sds.study.newbabyseaterapp.calendar.budget.BudgetListAdapter;
 import com.sds.study.newbabyseaterapp.calendar.cal.CalendarFragment;
 import com.sds.study.newbabyseaterapp.calendar.cal.DailyLayout;
@@ -75,7 +73,7 @@ public class CalendarActivity extends AppCompatActivity
     Calendar calendar = Calendar.getInstance();
     CoordinatorLayout layoutContainer;
     View inc_layout_calendar, inc_layout_diarylist, inc_layout_diary, inc_layout_schedulelist, inc_layout_schedule;
-    
+
     CalendarFragment calendarFragment;
     BabySeaterSqlHelper sqlHelper;    //데이터 베이스 구축
     public static SQLiteDatabase db;  //데이터 베이스 쿼리문 제어
@@ -282,7 +280,7 @@ public class CalendarActivity extends AppCompatActivity
 
                 break;
 
-            case READ_EXST_PERMISSION :
+            /*case READ_EXST_PERMISSION :
 
                 if(permissions.length > 0 && grantResults[0] == PackageManager.PERMISSION_DENIED){
                     showAlertMsg("내장 디렉토리 읽기 권한 안내", "권한을 부여하지 않으면 일부 기능을 사용 할 수 없습니다.");
@@ -290,12 +288,12 @@ public class CalendarActivity extends AppCompatActivity
                     return;
                 }
 
-                break;
+                break;*/
 
-            case FINE_LOC_PERMISSION :
+            case FINE_LOC_PERMISSION:
 
-                if(permissions.length>0 && grantResults[0]== PackageManager.PERMISSION_DENIED){
-                    showAlertMsg("위치 관련 권한 안내1","권한을 부여하지 않으면 일부 기능을 사용 할 수 없습니다.");
+                if(permissions.length > 0 && grantResults[0] == PackageManager.PERMISSION_DENIED){
+                    showAlertMsg("위치 관련 권한 안내1", "권한을 부여하지 않으면 일부 기능을 사용 할 수 없습니다.");
                     Log.d(TAG, "FINE_LOC_PERMISSION 체크 완료");
 
                     return;
@@ -304,12 +302,10 @@ public class CalendarActivity extends AppCompatActivity
 
                 //showAlertMsg("안내", "상단의 나침반 아이콘을 클릭하여 위치를 재설정해 주세요.");
 
-                break;
-
             case COARSE_LOC_PERMISSION:
 
                 if(permissions.length > 0 && grantResults[0] == PackageManager.PERMISSION_DENIED){
-                    showAlertMsg("위치 관련 권한 안내", "권한을 부여하지 않으면 일부 기능을 사용 할 수 없습니다.");
+                    showAlertMsg("위치 관련 권한 안내2", "권한을 부여하지 않으면 일부 기능을 사용 할 수 없습니다.");
                     Log.d(TAG, "COARSE_LOC_PERMISSION 체크 완료");
 
                     return;
@@ -399,19 +395,15 @@ public class CalendarActivity extends AppCompatActivity
 
                 boolean isCoarsePassed = checkPermission(Manifest.permission.ACCESS_COARSE_LOCATION, COARSE_LOC_PERMISSION);
                 boolean isFinePassed = checkPermission(Manifest.permission.ACCESS_FINE_LOCATION, FINE_LOC_PERMISSION);
-                boolean isReadExPassed = checkPermission(Manifest.permission.READ_EXTERNAL_STORAGE, READ_EXST_PERMISSION);
+                /*boolean isReadExPassed = checkPermission(Manifest.permission.READ_EXTERNAL_STORAGE, READ_EXST_PERMISSION);*/
 
-                if(isReadExPassed){
+                if(isCoarsePassed || isFinePassed){
 
-                    if(isCoarsePassed||isFinePassed){
+                    Intent intent = new Intent(this, SchoolActivity.class);
+                    startActivity(intent);
+                    Log.d(TAG, "인텐트 넘김");
 
-                        Intent intent = new Intent(this, SchoolActivity.class);
-                        startActivity(intent);
-                        Log.d(TAG, "인텐트 넘김");
-
-                        finish();
-
-                    }
+                    finish();
 
                 }
 

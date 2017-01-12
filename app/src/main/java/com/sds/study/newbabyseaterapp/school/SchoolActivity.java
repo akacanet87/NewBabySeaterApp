@@ -58,7 +58,7 @@ public class SchoolActivity extends AppCompatActivity implements OnMapReadyCallb
 
         this.googleMap = googleMap;
 
-        googleMap.addMarker(new MarkerOptions().title("내 마커").position(myPoint));
+        googleMap.addMarker(new MarkerOptions().title("나의 위치").position(myPoint));
         googleMap.moveCamera(CameraUpdateFactory.newLatLngZoom(myPoint, 15f));
 
     }
@@ -120,7 +120,7 @@ public class SchoolActivity extends AppCompatActivity implements OnMapReadyCallb
 
                 }else{
 
-                    updateConfirmMsg("안내", "데이터베이스 업데이트를 실행하시겠습니까?\n(5분 정도 소요됩니다.)");
+                    updateConfirmMsg("안내", "데이터베이스 업데이트를 실행하시겠습니까?\n업데이트는 6개월마다 해주시는 것이 좋습니다.\n(1~5분 정도 소요됩니다.)");
 
                 }
 

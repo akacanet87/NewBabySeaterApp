@@ -14,6 +14,12 @@ public class SchoolInfo{
     @SerializedName("소재지도로명주소")
     public String address;
 
+    @SerializedName("시도명")
+    public String sido;
+
+    @SerializedName("시군구명")
+    public String sigungu;
+
     @SerializedName("위도")
     public String lat;
 
@@ -30,9 +36,9 @@ public class SchoolInfo{
     public String teacher_num;
 
     @SerializedName("CCTV설치수")
-    public String cctv_num="";
+    public String cctv_num;
 
     @SerializedName("통학차량운영여부")
-    public String has_schoolbus="";
+    public String has_schoolbus;
 
 }

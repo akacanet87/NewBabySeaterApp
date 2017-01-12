@@ -65,7 +65,7 @@ public class BabySeaterSqlHelper extends SQLiteOpenHelper{
         school_sql.append("create table school(");
         school_sql.append("school_id integer primary key autoincrement");
         school_sql.append(",school_name varchar(50)");
-        school_sql.append(",addr varchar(300)");
+        school_sql.append(",address varchar(300)");
         school_sql.append(",lat varchar(50)");
         school_sql.append(",lon varchar(50)");
         school_sql.append(",school_tel varchar(20)");

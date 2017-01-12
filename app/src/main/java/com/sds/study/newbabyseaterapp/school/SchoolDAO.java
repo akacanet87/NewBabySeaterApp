@@ -3,6 +3,7 @@ package com.sds.study.newbabyseaterapp.school;
 import android.content.Context;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
+import android.util.Log;
 
 /**
  * Created by CANET on 2017-01-09.
@@ -63,6 +64,53 @@ public class SchoolDAO{
         String teacher_num = schoolInfo.teacher_num;
         String cctv_num = schoolInfo.cctv_num;
         String has_schoolbus = schoolInfo.has_schoolbus;
+
+        String sido = schoolInfo.sido;
+        String sigungu = schoolInfo.sigungu;
+
+        if(address==null||address==""){
+
+            address = sido + " " + sigungu;
+
+            Log.d(TAG, "주소 없는 곳의 주소 : " + address);
+
+        }else if(address.startsWith("\"")){
+
+            Log.d(TAG, "기존 address : " + address);
+
+            address = address.substring(1, address.length() - 1);
+
+            Log.d(TAG, "바뀐 address : " + address);
+
+        }
+
+        if(lat==null||lat==""){
+
+            lat="0";
+
+        }
+
+        if(lon==null||lon==""){
+
+            lon="0";
+
+        }
+
+        if(cctv_num=="-"||cctv_num=="0"||cctv_num=="N"||cctv_num==null||cctv_num==""){
+
+            cctv_num="0";
+
+        }
+
+        if(has_schoolbus=="_"||has_schoolbus=="0"||has_schoolbus=="N"||has_schoolbus=="미운영"||has_schoolbus=="부"||has_schoolbus==""||has_schoolbus==null){
+
+            has_schoolbus="N";
+
+        }else{
+
+            has_schoolbus="Y";
+
+        }
 
         String sql = "insert into school(school_name,address,lat,lon,school_tel,max_stu_num,teacher_num,cctv_num,has_schoolbus)";
         sql += " values(?,?,?,?,?,?,?,?,?)";

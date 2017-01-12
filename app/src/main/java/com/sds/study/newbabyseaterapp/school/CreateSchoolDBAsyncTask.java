@@ -24,7 +24,7 @@ import java.net.URL;
  * Created by CANET on 2017-01-09.
  */
 
-public class CreateSchoolDBAsyncTask extends AsyncTask<String, Void, String>{
+public class CreateSchoolDBAsyncTask extends AsyncTask<Integer, Integer, Integer>{
 
     Context context;
     SQLiteDatabase db;
@@ -41,12 +41,15 @@ public class CreateSchoolDBAsyncTask extends AsyncTask<String, Void, String>{
     String json;
 
     //  어린이집 개수는 54000개 정도지만 json의 양이 너무 많다. 20000개 30초, 25000개 1분
-    int maxListSize = 30000;
+    int maxListSize = 55000;
 
     String key = "zNUxHwqZV0QfCgDkhHtNKqyPfsEEHmNfp0%2FO0zFHfmg1sujkxk%2FJVxf4qml60BaH219L795Fhlwx7vuiGAFahg%3D%3D";
     String api_address = "http://api.data.go.kr/openapi/0c9e6948-e327-404b-89bf-2506d4684c1c";
 
     String errorCode = "[\"ERROR\",\"인증되지";
+
+    public static final int SAVE_SUCCESS = 0001;
+    public static final int SAVE_FAILED = 0002;
 
     public CreateSchoolDBAsyncTask(Context context, SQLiteDatabase db){
 
@@ -66,72 +69,79 @@ public class CreateSchoolDBAsyncTask extends AsyncTask<String, Void, String>{
         schoolDAO = new SchoolDAO(context, db);
         gson = new Gson();
         progress = new ProgressDialog(context);
-        progress.setProgressStyle(ProgressDialog.STYLE_SPINNER);
-        progress.setMessage("어린이집 데이터베이스 생성중...\n(2분 정도 소요됩니다.)");
+        progress.setProgressStyle(ProgressDialog.STYLE_HORIZONTAL);
+        progress.setCanceledOnTouchOutside(false);
+        progress.setMessage("어린이집 데이터베이스 받아오는 중...\n잠시만 기다리시면 시작됩니다.\n(1~5분 정도 소요됩니다.)");
+        progress.setMax(maxListSize);
         progress.show();
+
+        Log.d(TAG, "json 받기 완료");
         
     }
 
     @Override
-    protected String doInBackground(String... strings){
-
-        Log.d(TAG, "doInBackground 실행");
+    protected Integer doInBackground(Integer... values){
 
         json = getJson();
 
-        return json;
+        Log.d(TAG, "doInBackground 실행");
+
+        int result = 0;
+
+        if(json.contains("{\"schools\":[{")){
+
+            for(int i=0 ; i<schoolInfos.length ; i++){
+
+                publishProgress(i);
+
+                /*SchoolInfo schoolInfo = schoolInfos[i];
+
+                schoolDAO.insertSchool(schoolInfo);*/
+
+            }
+
+            Log.d(TAG, "작업 완료!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
+            result = SAVE_SUCCESS;
+
+        }else{
+
+            result = SAVE_FAILED;
+
+        }
+
+        return result;
 
     }
 
     @Override
-    protected void onPostExecute(String s){
+    protected void onProgressUpdate(Integer... values){
+
+        super.onProgressUpdate(values);
+
+        progress.setProgress(values[0]);
+
+    }
+
+    @Override
+    protected void onPostExecute(Integer result){
 
         Log.d(TAG, "onPostExecute 실행");
-        Log.d(TAG, s);
+        Log.d(TAG, "result : " + result);
 
-        /*if(json.contains(errorCode)||json==null){
+        progress.dismiss();
+        progress=null;
 
-            showAlertMsg("안내","데이터베이스를 받아오는데 실패하였습니다.\n잠시 후 다시 시도해 주세요.");
-            progress.dismiss();
+        if(result==SAVE_SUCCESS){
 
-        }else{
+            showAlertMsg("안내","데이터베이스 저장 완료!");
 
-            progress.dismiss();
-            for(int i=0 ; i<schoolInfos.length ; i++){
-
-                SchoolInfo schoolInfo = schoolInfos[i];
-
-                String name = schoolInfo.school_name;
-
-                Log.d(TAG, "name : " + name);
-
-            }
-
-        }*/
-
-
-        if(s.contains("{\"schools\":[{")){
-
-            for(int i=0 ; i<schoolInfos.length ; i++){
-
-                SchoolInfo schoolInfo = schoolInfos[i];
-
-                schoolDAO.insertSchool(schoolInfo);
-
-            }
-
-            progress.dismiss();
-
-            Log.d(TAG, "작업 완료!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
-
-        }else{
+        }else if(result==SAVE_FAILED){
 
             showAlertMsg("안내","데이터베이스를 받아오는데 실패하였습니다.\n잠시 후 다시 시도해 주세요.");
-            progress.dismiss();
 
         }
 
-        super.onPostExecute(s);
+        super.onPostExecute(result);
 
     }
 
@@ -183,25 +193,6 @@ public class CreateSchoolDBAsyncTask extends AsyncTask<String, Void, String>{
 
             //  1줄밖에 안넘어와서 while문이 필요 없다.
             newData = "{\"schools\":"+buffR.readLine()+"}";
-
-            /*int commaIndex = 0;
-
-            while(true){
-
-                commaIndex = data.indexOf("},{")+2;
-                if(commaIndex<=2){
-
-                    break;
-
-                }
-                sb.append(data.substring(0, commaIndex));
-
-                data = data.substring(commaIndex, data.length());
-                //Log.d(TAG, "data : " + data);
-
-            }*/
-
-            //Log.d(TAG, "sb.toString() : " + sb.toString());
 
             Log.d(TAG, "sb에 담음, buffR.readLine() 끝남");
 
