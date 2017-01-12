@@ -19,36 +19,59 @@ public class SchoolDAO{
 
         this.db = db;
         this.context = context;
-        TAG = this.getClass().getName()+"/Canet";
+        TAG = this.getClass().getName() + "/Canet";
 
     }
 
     public SchoolDAO(SQLiteDatabase db){
 
         this.db = db;
-        TAG = this.getClass().getName()+"/Canet";
+        TAG = this.getClass().getName() + "/Canet";
 
     }
 
     public int selectOne(){
 
-        int count=0;
+        int count = 0;
 
-        String sql="select date_id from diary where date_id=1";
+        String sql = "select school_id from school where school_id=1";
 
         Cursor rs = db.rawQuery(sql, null);
 
-        if (rs != null) {
-            try {
+        if(rs != null){
+            try{
                 count = rs.getCount();
-            } catch (Exception e) {
+            }catch(Exception e){
                 e.printStackTrace();
-            } finally {
+            }finally{
                 rs.close();
             }
         }
 
         return count;
+
+    }
+
+    public void insertSchool(SchoolInfo schoolInfo){
+
+        String school_name = schoolInfo.school_name;
+        String address = schoolInfo.address;
+        String lat = schoolInfo.lat;
+        String lon = schoolInfo.lon;
+        String school_tel = schoolInfo.school_tel;
+        String max_stu_num = schoolInfo.max_stu_num;
+        String teacher_num = schoolInfo.teacher_num;
+        String cctv_num = schoolInfo.cctv_num;
+        String has_schoolbus = schoolInfo.has_schoolbus;
+
+        String sql = "insert into school(school_name,address,lat,lon,school_tel,max_stu_num,teacher_num,cctv_num,has_schoolbus)";
+        sql += " values(?,?,?,?,?,?,?,?,?)";
+
+        db.execSQL(sql, new String[]{
+
+                school_name, address, lat, lon, school_tel, max_stu_num, teacher_num, cctv_num, has_schoolbus
+
+        });
 
     }
 

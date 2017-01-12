@@ -3,7 +3,7 @@
              xmlns:tools="http://schemas.android.com/tools"
              android:layout_width="match_parent"
              android:layout_height="match_parent"
-             tools:context="com.sds.study.newbabyseaterapp.calendar.calendar.OneMonthFragment">
+             tools:context="com.sds.study.newbabyseaterapp.calendar.cal.CalendarFragment">
 
     <!--<fr.castorflex.android.verticalviewpager.VerticalViewPager
         android:id="@+id/vertical_viewpager"

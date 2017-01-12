@@ -6,21 +6,21 @@ package com.sds.study.newbabyseaterapp.calendar.budget;
 
 public class Budget{
 
-    private int budgetcard_id;
+    private int budget_id;
     private int date_id;
     private int cost;
     private String payment;
     private String place;
     private String content;
 
-    public int getBudgetcard_id(){
+    public int getBudget_id(){
 
-        return budgetcard_id;
+        return budget_id;
     }
 
-    public void setBudgetcard_id(int budgetcard_id){
+    public void setBudget_id(int budget_id){
 
-        this.budgetcard_id = budgetcard_id;
+        this.budget_id = budget_id;
     }
 
     public int getDate_id(){

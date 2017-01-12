@@ -10,32 +10,23 @@ import android.util.Log;
 import com.google.gson.Gson;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonParser;
-import com.google.gson.reflect.TypeToken;
 import com.google.gson.stream.JsonReader;
-import com.google.gson.stream.MalformedJsonException;
-
-import org.json.JSONArray;
-import org.json.JSONException;
-import org.json.JSONObject;
 
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
-import java.io.Reader;
 import java.io.StringReader;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
-import java.util.ArrayList;
 
 /**
  * Created by CANET on 2017-01-09.
  */
 
-public class CreateSchoolDBAsyncTask extends AsyncTask<String, Integer, String>{
+public class CreateSchoolDBAsyncTask extends AsyncTask<String, Void, String>{
 
     Context context;
-    JSONArray array;
     SQLiteDatabase db;
     HttpURLConnection con;
     URL url;
@@ -43,14 +34,14 @@ public class CreateSchoolDBAsyncTask extends AsyncTask<String, Integer, String>{
     Gson gson;
     ProgressDialog progress;
 
-    JsonInfo jsonInfo;
     SchoolInfo[] schoolInfos;
+    SchoolDAO schoolDAO;
     
     String TAG;
     String json;
 
-    //  어린이집 개수는 54000개 정도지만 json의 양이 너무 많고 시간이 오래 걸리므로 또 10000개만 해도 MalformedJsonException이 나옴
-    int maxListSize = 5000;
+    //  어린이집 개수는 54000개 정도지만 json의 양이 너무 많다. 20000개 30초, 25000개 1분
+    int maxListSize = 25000;
 
     String key = "zNUxHwqZV0QfCgDkhHtNKqyPfsEEHmNfp0%2FO0zFHfmg1sujkxk%2FJVxf4qml60BaH219L795Fhlwx7vuiGAFahg%3D%3D";
     String api_address = "http://api.data.go.kr/openapi/0c9e6948-e327-404b-89bf-2506d4684c1c";
@@ -72,10 +63,11 @@ public class CreateSchoolDBAsyncTask extends AsyncTask<String, Integer, String>{
         super.onPreExecute();
         Log.d(TAG, "onPreExecute시작");
 
+        schoolDAO = new SchoolDAO(context, db);
         gson = new Gson();
         progress = new ProgressDialog(context);
         progress.setProgressStyle(ProgressDialog.STYLE_SPINNER);
-        progress.setMessage("어린이집 데이터베이스 생성중...");
+        progress.setMessage("어린이집 데이터베이스 생성중...\n(2분 정도 소요됩니다.)");
         progress.show();
         
     }
@@ -118,18 +110,19 @@ public class CreateSchoolDBAsyncTask extends AsyncTask<String, Integer, String>{
         }*/
 
 
-        if(json.contains("{\"schools\":[{")){
+        if(s.contains("{\"schools\":[{")){
 
-            progress.dismiss();
-            for(int i=0 ; i<schoolInfos.length ; i++){
+            /*for(int i=0 ; i<schoolInfos.length ; i++){
 
                 SchoolInfo schoolInfo = schoolInfos[i];
 
-                String name = schoolInfo.school_name;
+                schoolDAO.insertSchool(schoolInfo);
 
-                Log.d(TAG, "name : " + name);
+            }*/
 
-            }
+            progress.dismiss();
+
+            Log.d(TAG, "작업 완료!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
 
         }else{
 
@@ -147,6 +140,12 @@ public class CreateSchoolDBAsyncTask extends AsyncTask<String, Integer, String>{
 
         Log.d(TAG, "onCancelled 호출");
 
+        /*if(progress.isShowing()){
+
+            progress.dismiss();
+
+        }*/
+
         if(buffR!=null){
 
             try{
@@ -163,7 +162,7 @@ public class CreateSchoolDBAsyncTask extends AsyncTask<String, Integer, String>{
 
         String string_url = api_address + "?serviceKey=" + key + "&s_page=1" + "&s_list=" + maxListSize + "&type=json" + "&numOfRows=" + 1 + "&pageNo=1";
 
-        StringBuffer sb = new StringBuffer();
+        //StringBuffer sb = new StringBuffer();
 
         String newData = null;
 
@@ -182,18 +181,7 @@ public class CreateSchoolDBAsyncTask extends AsyncTask<String, Integer, String>{
 
             Log.d(TAG, "buffR에 담음");
 
-            /*String data = null;
-
-            Log.d(TAG, "data에 담음");
-
-            while((data=buffR.readLine()) != null){
-
-                sb.append(data);
-
-            }
-
-            newData = "{\"schools\":"+sb.toString()+"}";*/
-
+            //  1줄밖에 안넘어와서 while문이 필요 없다.
             newData = "{\"schools\":"+buffR.readLine()+"}";
 
             /*int commaIndex = 0;

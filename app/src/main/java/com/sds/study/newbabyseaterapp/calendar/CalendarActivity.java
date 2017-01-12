@@ -8,7 +8,6 @@ import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.database.sqlite.SQLiteDatabase;
 import android.os.Bundle;
-import android.os.Environment;
 import android.os.Handler;
 import android.os.Message;
 import android.support.annotation.NonNull;
@@ -36,15 +35,14 @@ import android.widget.TextView;
 import android.widget.TimePicker;
 import android.widget.Toast;
 
-import com.sds.study.newbabyseaterapp.BabySeaterSqlHelper;
-import com.sds.study.newbabyseaterapp.CheckPermission;
 import com.sds.study.newbabyseaterapp.R;
+
+import com.sds.study.newbabyseaterapp.BabySeaterSqlHelper;
+
 import com.sds.study.newbabyseaterapp.calendar.budget.BudgetListAdapter;
-import com.sds.study.newbabyseaterapp.calendar.calendar.CalendarFragment;
-import com.sds.study.newbabyseaterapp.calendar.calendar.DailyLayout;
-import com.sds.study.newbabyseaterapp.calendar.calendar.OnMonthChangeListener;
-import com.sds.study.newbabyseaterapp.calendar.calendar.OneDayLayout;
-import com.sds.study.newbabyseaterapp.calendar.calendar.OneMonthFragment;
+import com.sds.study.newbabyseaterapp.calendar.cal.CalendarFragment;
+import com.sds.study.newbabyseaterapp.calendar.cal.DailyLayout;
+import com.sds.study.newbabyseaterapp.calendar.cal.OnMonthChangeListener;
 import com.sds.study.newbabyseaterapp.calendar.diary.Diary;
 import com.sds.study.newbabyseaterapp.calendar.diary.DiaryItem;
 import com.sds.study.newbabyseaterapp.calendar.diary.DiaryListAdapter;
@@ -56,18 +54,7 @@ import com.sds.study.newbabyseaterapp.calendar.schedule.ScheduleTag;
 import com.sds.study.newbabyseaterapp.school.SchoolActivity;
 import com.sds.study.newbabyseaterapp.school.SchoolDAO;
 
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.IOException;
-import java.util.ArrayList;
 import java.util.Calendar;
-
-import jxl.Cell;
-import jxl.Sheet;
-import jxl.Workbook;
-import jxl.read.biff.BiffException;
-import jxl.read.biff.WorkbookParser;
 
 public class CalendarActivity extends AppCompatActivity
         implements NavigationView.OnNavigationItemSelectedListener, AdapterView.OnItemClickListener{
@@ -88,8 +75,7 @@ public class CalendarActivity extends AppCompatActivity
     Calendar calendar = Calendar.getInstance();
     CoordinatorLayout layoutContainer;
     View inc_layout_calendar, inc_layout_diarylist, inc_layout_diary, inc_layout_schedulelist, inc_layout_schedule;
-
-    OneMonthFragment oneMonthFragment;
+    
     CalendarFragment calendarFragment;
     BabySeaterSqlHelper sqlHelper;    //데이터 베이스 구축
     public static SQLiteDatabase db;  //데이터 베이스 쿼리문 제어
@@ -114,6 +100,7 @@ public class CalendarActivity extends AppCompatActivity
 
     public static final int DIARY_NUM = 1000;
     public static final int SCHEDULE_NUM = 1001;
+    public static final int BUDGET_NUM = 1002;
     public static final int INSERT_DIARY = 2000;
     public static final int DELETE_DIARY = 2001;
     public static final int UPDATE_DIARY = 2002;
@@ -158,9 +145,6 @@ public class CalendarActivity extends AppCompatActivity
         NavigationView navigationView = (NavigationView) findViewById(R.id.nav_view);
         navigationView.setNavigationItemSelectedListener(this);
 
-        /*calendarPermission = new CheckPermission(this);
-        schoolPermission = new CheckPermission(this);
-        calendarPermission.checkPermissions(Manifest.permission.RECEIVE_SMS, SMS_PERMISSION);*/
         checkPermission(Manifest.permission.RECEIVE_SMS, SMS_PERMISSION);
 
         initCalendar();
@@ -227,16 +211,6 @@ public class CalendarActivity extends AppCompatActivity
 
             @Override
             public void onDayClick(DailyLayout dayView){
-
-                today_date = dayView.get(Calendar.DAY_OF_MONTH);
-                calendar_txt_thisdate.setText(Integer.toString(today_date) + " 일");
-
-                date_id = today_year * 10000 + today_month * 100 + today_date;
-
-            }
-
-            @Override
-            public void onDayClick(OneDayLayout dayView){
 
                 today_date = dayView.get(Calendar.DAY_OF_MONTH);
                 calendar_txt_thisdate.setText(Integer.toString(today_date) + " 일");
@@ -1078,48 +1052,6 @@ public class CalendarActivity extends AppCompatActivity
     public void startTimer(){
 
         backTimerHandler.sendEmptyMessageDelayed(MSG_TIMER_EXPIRED, BACKKEY_TIMEOUT * MILLIS_IN_SEC);
-    }
-
-    public void readExcelFile(){
-
-        String fileName = "schools.xls";
-        ArrayList<Cell[]> cellList = new ArrayList<>();
-
-        Log.d(TAG, "readExcelFile시작");
-
-        try{
-
-            Workbook workbook = Workbook.getWorkbook(getBaseContext().getResources().getAssets().open(fileName));
-            Sheet sheet = workbook.getSheet(0);
-            Cell[] cells=null;
-
-            for(int i=0 ; i<sheet.getColumns(); i++){
-                cells = sheet.getColumn(i);
-                cellList.add(cells);
-            }
-
-            Log.d(TAG, "셀 읽기 완료");
-
-            for(int i=0 ; i<cellList.size(); i++){
-
-                Cell[] cells1 = cellList.get(i);
-
-                for(int j = 0; j < cells1.length ; j++){
-
-                    String content = cells1[j].getContents();
-                    Log.d(TAG, "content : " + content );
-
-                }
-
-            }
-
-
-        }catch(IOException e){
-            e.printStackTrace();
-        }catch(BiffException e){
-            e.printStackTrace();
-        }
-
     }
 
     private TimePickerDialog.OnTimeSetListener myTimeSetListener
