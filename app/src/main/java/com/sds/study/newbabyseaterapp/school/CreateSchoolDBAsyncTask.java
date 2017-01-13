@@ -41,7 +41,7 @@ public class CreateSchoolDBAsyncTask extends AsyncTask<Integer, Integer, Integer
     String json;
 
     //  어린이집 개수는 54000개 정도지만 json의 양이 너무 많다. 20000개 30초, 25000개 1분
-    int maxListSize = 55000;
+    int maxListSize = 35000;
 
     String key = "zNUxHwqZV0QfCgDkhHtNKqyPfsEEHmNfp0%2FO0zFHfmg1sujkxk%2FJVxf4qml60BaH219L795Fhlwx7vuiGAFahg%3D%3D";
     String api_address = "http://api.data.go.kr/openapi/0c9e6948-e327-404b-89bf-2506d4684c1c";
@@ -94,9 +94,9 @@ public class CreateSchoolDBAsyncTask extends AsyncTask<Integer, Integer, Integer
 
                 publishProgress(i);
 
-                /*SchoolInfo schoolInfo = schoolInfos[i];
+                SchoolInfo schoolInfo = schoolInfos[i];
 
-                schoolDAO.insertSchool(schoolInfo);*/
+                schoolDAO.insertSchool(schoolInfo);
 
             }
 

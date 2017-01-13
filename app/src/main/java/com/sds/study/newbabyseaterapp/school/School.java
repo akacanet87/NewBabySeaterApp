@@ -5,13 +5,14 @@ public class School{
 
     private int school_id;
     private String school_name;
-    private String lng;
-    private String lon;
+    private double lat;
+    private double lon;
     private String address;
-    private String total_kids;
-    private String num_teacher;
-    private String tel_school;
-    private String num_CCTV;
+    private int max_stu_num;
+    private int teacher_num;
+    private String school_tel;
+    private int cctv_num;
+    private String has_schoolbus;
 
     public int getSchool_id(){
 
@@ -33,22 +34,22 @@ public class School{
         this.school_name = school_name;
     }
 
-    public String getLng(){
+    public double getLat(){
 
-        return lng;
+        return lat;
     }
 
-    public void setLng(String lng){
+    public void setLat(double lat){
 
-        this.lng = lng;
+        this.lat = lat;
     }
 
-    public String getLon(){
+    public double getLon(){
 
         return lon;
     }
 
-    public void setLon(String lon){
+    public void setLon(double lon){
 
         this.lon = lon;
     }
@@ -63,43 +64,53 @@ public class School{
         this.address = address;
     }
 
-    public String getTotal_kids(){
+    public int getMax_stu_num(){
 
-        return total_kids;
+        return max_stu_num;
     }
 
-    public void setTotal_kids(String total_kids){
+    public void setMax_stu_num(int max_stu_num){
 
-        this.total_kids = total_kids;
+        this.max_stu_num = max_stu_num;
     }
 
-    public String getNum_teacher(){
+    public int getTeacher_num(){
 
-        return num_teacher;
+        return teacher_num;
     }
 
-    public void setNum_teacher(String num_teacher){
+    public void setTeacher_num(int teacher_num){
 
-        this.num_teacher = num_teacher;
+        this.teacher_num = teacher_num;
     }
 
-    public String getTel_school(){
+    public String getSchool_tel(){
 
-        return tel_school;
+        return school_tel;
     }
 
-    public void setTel_school(String tel_school){
+    public void setSchool_tel(String school_tel){
 
-        this.tel_school = tel_school;
+        this.school_tel = school_tel;
     }
 
-    public String getNum_CCTV(){
+    public int getCctv_num(){
 
-        return num_CCTV;
+        return cctv_num;
     }
 
-    public void setNum_CCTV(String num_CCTV){
+    public void setCctv_num(int cctv_num){
 
-        this.num_CCTV = num_CCTV;
+        this.cctv_num = cctv_num;
+    }
+
+    public String getHas_schoolbus(){
+
+        return has_schoolbus;
+    }
+
+    public void setHas_schoolbus(String has_schoolbus){
+
+        this.has_schoolbus = has_schoolbus;
     }
 }

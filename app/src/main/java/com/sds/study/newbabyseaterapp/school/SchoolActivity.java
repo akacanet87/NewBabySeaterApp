@@ -18,6 +18,8 @@ import com.google.android.gms.maps.model.MarkerOptions;
 import com.sds.study.newbabyseaterapp.R;
 import com.sds.study.newbabyseaterapp.calendar.CalendarActivity;
 
+import java.util.ArrayList;
+
 import static com.sds.study.newbabyseaterapp.calendar.CalendarActivity.db;
 
 /**
@@ -30,9 +32,11 @@ public class SchoolActivity extends AppCompatActivity implements OnMapReadyCallb
     GoogleMap googleMap;
     LatLng myPoint;
     GpsInfo gps;
-    SchoolDAO schoolDAO;
+    ArrayList<School> schools;
 
     SchoolActivity schoolActivity;
+    SchoolDAO schoolDAO;
+    School school;
 
     String TAG;
     double lat;
@@ -47,6 +51,7 @@ public class SchoolActivity extends AppCompatActivity implements OnMapReadyCallb
         setContentView(R.layout.activity_school);
         schoolDAO = new SchoolDAO(this, db);
 
+        initSchoolList();
         initGps();
 
     }
@@ -60,6 +65,38 @@ public class SchoolActivity extends AppCompatActivity implements OnMapReadyCallb
 
         googleMap.addMarker(new MarkerOptions().title("나의 위치").position(myPoint));
         googleMap.moveCamera(CameraUpdateFactory.newLatLngZoom(myPoint, 15f));
+
+        if(schools!=null){
+
+            Log.d(TAG, "schools.size() : "+schools.size());
+
+            int schoolCount=0;
+
+            while(schoolCount<schools.size()){
+
+                School school = schools.get(schoolCount);
+
+                StringBuffer schoolSummary = new StringBuffer();
+
+                schoolSummary.append(school.getSchool_name() + "\n");
+                schoolSummary.append("전화 : " + school.getSchool_tel() + "\n");
+                schoolSummary.append("선생님 : " + school.getTeacher_num() + "명\n");
+                schoolSummary.append("원생정원 : " + school.getMax_stu_num() + "명\n");
+                schoolSummary.append("CCTV : " + school.getCctv_num() + "개\n");
+                schoolSummary.append("통학버스 : " + school.getHas_schoolbus() + "\n");
+                schoolSummary.append("주소 : " + school.getAddress());
+
+                LatLng schoolPos = new LatLng(school.getLat(),school.getLat());
+
+                googleMap.addMarker(new MarkerOptions().title(schoolSummary.toString()).position(schoolPos));
+
+                schoolCount++;
+
+            }
+
+            Log.d(TAG, "schoolCount : " + schoolCount);
+
+        }
 
     }
 
@@ -87,6 +124,20 @@ public class SchoolActivity extends AppCompatActivity implements OnMapReadyCallb
         map.getMapAsync(this);
 
         Log.d(TAG, "initGps 완료");
+
+    }
+
+    public void initSchoolList(){
+
+        int count = schoolDAO.selectOne();
+
+        Log.d(TAG, "selectOne의 크기는 : " + count);
+
+        if(count>0){
+
+            schools = schoolDAO.selectAllSchools();
+
+        }
 
     }
 
