@@ -36,7 +36,6 @@ public class SchoolActivity extends AppCompatActivity implements OnMapReadyCallb
 
     SchoolActivity schoolActivity;
     SchoolDAO schoolDAO;
-    School school;
 
     String TAG;
     double lat;
@@ -59,44 +58,15 @@ public class SchoolActivity extends AppCompatActivity implements OnMapReadyCallb
     @Override
     public void onMapReady(GoogleMap googleMap){
 
-        Log.d(TAG, "onMapReady 호출됨");
-
         this.googleMap = googleMap;
+
+        MapMarkerAsyncTask mapMarkerAsyncTask = new MapMarkerAsyncTask(this, schools, googleMap);
+        mapMarkerAsyncTask.execute();
 
         googleMap.addMarker(new MarkerOptions().title("나의 위치").position(myPoint));
         googleMap.moveCamera(CameraUpdateFactory.newLatLngZoom(myPoint, 15f));
 
-        if(schools!=null){
-
-            Log.d(TAG, "schools.size() : "+schools.size());
-
-            int schoolCount=0;
-
-            while(schoolCount<schools.size()){
-
-                School school = schools.get(schoolCount);
-
-                StringBuffer schoolSummary = new StringBuffer();
-
-                schoolSummary.append(school.getSchool_name() + "\n");
-                schoolSummary.append("전화 : " + school.getSchool_tel() + "\n");
-                schoolSummary.append("선생님 : " + school.getTeacher_num() + "명\n");
-                schoolSummary.append("원생정원 : " + school.getMax_stu_num() + "명\n");
-                schoolSummary.append("CCTV : " + school.getCctv_num() + "개\n");
-                schoolSummary.append("통학버스 : " + school.getHas_schoolbus() + "\n");
-                schoolSummary.append("주소 : " + school.getAddress());
-
-                LatLng schoolPos = new LatLng(school.getLat(),school.getLat());
-
-                googleMap.addMarker(new MarkerOptions().title(schoolSummary.toString()).position(schoolPos));
-
-                schoolCount++;
-
-            }
-
-            Log.d(TAG, "schoolCount : " + schoolCount);
-
-        }
+        Log.d(TAG, "onMapReady 호출 완료");
 
     }
 
@@ -138,6 +108,8 @@ public class SchoolActivity extends AppCompatActivity implements OnMapReadyCallb
             schools = schoolDAO.selectAllSchools();
 
         }
+
+        Log.d(TAG, "initSchoolList 완료");
 
     }
 

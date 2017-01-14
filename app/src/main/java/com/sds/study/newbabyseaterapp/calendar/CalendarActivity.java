@@ -105,7 +105,7 @@ public class CalendarActivity extends AppCompatActivity
     public static final int INSERT_SCHEDULE = 2100;
     public static final int DELETE_SCHEDULE = 2101;
     public static final int UPDATE_SCHEDULE = 2102;
-    public static final int ALARM_BTN = 9000;
+    public static final int ALARM_BTN = 5000;
     public static final int NEW_ITEM = 3000;
     public static final int EDIT_ITEM = 3001;
     public static final int SMS_PERMISSION = 7000;
