@@ -5,6 +5,8 @@ import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.util.Log;
 
+import java.util.ArrayList;
+
 /**
  * Created by CANET on 2017-01-03.
  */
@@ -20,21 +22,101 @@ public class CalendarDAO{
 
         this.db = db;
         this.context = context;
-        TAG = this.getClass().getName()+"/Canet";
+        TAG = this.getClass().getName() + "/Canet";
 
     }
 
     public CalendarDAO(SQLiteDatabase db){
 
         this.db = db;
-        TAG = this.getClass().getName()+"/Canet";
+        TAG = this.getClass().getName() + "/Canet";
 
     }
 
-    public void insertDiary( String title, String content, int date_id ){
+    public ArrayList<Baby> selectAllBabies(){
 
-        String sql="insert into diary(title, content, date_id)";
-        sql+=" values(?,?,?)";
+        ArrayList<Baby> babies = new ArrayList<>();
+
+        String sql = "select * from baby";
+
+        Cursor rs = db.rawQuery(sql, null);
+
+        if(rs != null){
+
+            for(rs.moveToFirst(); !rs.isAfterLast(); rs.moveToNext()){
+
+                Baby baby = new Baby();
+
+                baby.setBaby_id(rs.getInt(rs.getColumnIndex("baby_id")));
+                baby.setName(rs.getString(rs.getColumnIndex("name")));
+                baby.setGender(rs.getString(rs.getColumnIndex("gender")));
+                baby.setYear(rs.getInt(rs.getColumnIndex("year")));
+                baby.setMonth(rs.getInt(rs.getColumnIndex("month")));
+                baby.setDate(rs.getInt(rs.getColumnIndex("date")));
+
+                babies.add(baby);
+
+            }
+        }
+
+        return babies;
+
+    }
+
+    public Baby selectBaby(int id){
+
+        String sql = "select * from baby where baby_id=" + id;
+
+        Log.d(TAG, "id : " + id);
+        Log.d(TAG, "sql : " + sql);
+
+        Baby baby = new Baby();
+        Cursor rs = db.rawQuery(sql, null);
+        rs.moveToFirst();
+
+        Log.d(TAG, "rs : " + rs);
+
+        if(rs != null){
+
+            Log.d(TAG, "if문 들어옴");
+
+            baby.setName(rs.getString(rs.getColumnIndex("name")));
+            baby.setGender(rs.getString(rs.getColumnIndex("gender")));
+            baby.setYear(rs.getInt(rs.getColumnIndex("year")));
+            baby.setMonth(rs.getInt(rs.getColumnIndex("month")));
+            baby.setDate(rs.getInt(rs.getColumnIndex("date")));
+
+            Log.d(TAG, "baby세팅 완료");
+
+            rs.close();
+
+        }
+
+        Log.d(TAG, "이름 : " + baby.getName() + "\n성별 : " + baby.getGender() + "\n생년월일 : " + baby.getYear() + "." + baby.getMonth() + "." + baby.getDate() + "\nload baby 완료");
+
+        return baby;
+
+    }
+
+    public void insertBaby(String name, String gender, int year, int month, int date){
+
+        String sql = "insert into baby(name, gender, year, month, date)";
+        sql += " values(?,?,?,?,?)";
+
+        db.execSQL(sql, new String[]{
+
+                name, gender, Integer.toString(year), Integer.toString(month), Integer.toString(date)
+
+        });
+
+        Log.d(TAG, "이름 : " + name + "\n성별 : " + gender + "\n생년월일 : " + year + "." + month + "." + date + "\n아기 등록 완료");
+
+    }
+
+    public void insertDiary(String title, String content, int date_id){
+
+        String sql = "insert into diary(title, content, date_id)";
+        sql += " values(?,?,?)";
 
         db.execSQL(sql, new String[]{
 
@@ -46,7 +128,7 @@ public class CalendarDAO{
 
     }
 
-    public void insertSchedule( int date_id, int hour, int minute, String content ){
+    public void insertSchedule(int date_id, int hour, int minute, String content){
 
         String sql = "insert into schedule(date_id, hour, minute, content)";
         sql += " values(?,?,?,?)";
@@ -61,22 +143,40 @@ public class CalendarDAO{
 
     }
 
-    public int countDailyList(int date_id){
+    public int countBaby(){
 
-        int diaryCount=0;
+        int babyCount = 0;
 
-        String sql="select date_id from diary where date_id="+date_id;
+        String sql = "select baby_id from baby";
 
         Cursor rs = db.rawQuery(sql, null);
 
-        if (rs != null) {
-            try {
-                diaryCount = rs.getCount();
-            } catch (Exception e) {
-                e.printStackTrace();
-            } finally {
-                rs.close();
-            }
+        if(rs != null){
+
+            babyCount = rs.getCount();
+
+            rs.close();
+
+        }
+
+        return babyCount;
+
+    }
+
+    public int countDailyList(int date_id){
+
+        int diaryCount = 0;
+
+        String sql = "select date_id from diary where date_id=" + date_id;
+
+        Cursor rs = db.rawQuery(sql, null);
+
+        if(rs != null){
+
+            diaryCount = rs.getCount();
+
+            rs.close();
+
         }
 
         //Log.d(TAG, "다이어리 카운트 완료");
@@ -85,22 +185,20 @@ public class CalendarDAO{
 
     }
 
-    public int countScheduleList( int date_id ){
+    public int countScheduleList(int date_id){
 
         int scheduleCount = 0;
 
-        String sql = "select date_id from schedule where date_id="+date_id;
+        String sql = "select date_id from schedule where date_id=" + date_id;
 
         Cursor rs = db.rawQuery(sql, null);
 
-        if (rs != null) {
-            try {
-                scheduleCount = rs.getCount();
-            } catch (Exception e) {
-                e.printStackTrace();
-            } finally {
-                rs.close();
-            }
+        if(rs != null){
+
+            scheduleCount = rs.getCount();
+
+            rs.close();
+
         }
 
         //Log.d(TAG, "스케줄 카운트 완료");
@@ -109,7 +207,7 @@ public class CalendarDAO{
 
     }
 
-    public void updateDiary( String title, String content, int diary_id ){
+    public void updateDiary(String title, String content, int diary_id){
 
         String sql = "update diary set title=?, content=? where diary_id=?";
 
@@ -123,7 +221,7 @@ public class CalendarDAO{
 
     }
 
-    public void updateSchedule( int hour, int minute, String content, int schedule_id){
+    public void updateSchedule(int hour, int minute, String content, int schedule_id){
 
         String sql = "update schedule set hour=?, minute=?, content=? where schedule_id=?";
 
@@ -137,7 +235,7 @@ public class CalendarDAO{
 
     }
 
-    public void deleteDiary( int diary_id ){
+    public void deleteDiary(int diary_id){
 
         String sql = "delete from diary where diary_id=?";
 
@@ -151,7 +249,7 @@ public class CalendarDAO{
 
     }
 
-    public void deleteSchedule( int schedule_id ){
+    public void deleteSchedule(int schedule_id){
 
         String sql = "delete from schedule where schedule_id=?";
 

@@ -24,6 +24,19 @@ public class BabySeaterSqlHelper extends SQLiteOpenHelper{
     //즉! 파일이 존재하지 않을 때 이 메서드가 호출됨.
     public void onCreate(SQLiteDatabase sqLiteDatabase) {
 
+        StringBuffer baby_sql=new StringBuffer();
+
+        baby_sql.append("create table baby(");
+        baby_sql.append("baby_id integer primary key autoincrement");
+        baby_sql.append(",name varchar(50)");
+        baby_sql.append(",gender varchar(20)");
+        baby_sql.append(",year integer");
+        baby_sql.append(",month integer");
+        baby_sql.append(",date integer");
+        baby_sql.append(");");
+
+        sqLiteDatabase.execSQL(baby_sql.toString());
+
         StringBuffer diary_sql=new StringBuffer();
 
         diary_sql.append("create table diary(");
@@ -82,6 +95,7 @@ public class BabySeaterSqlHelper extends SQLiteOpenHelper{
 
     //해당 파일이 이미 존재하나, 버전 숫자가 다른경우우
     public void onUpgrade(SQLiteDatabase sqLiteDatabase, int i, int i1) {
+        sqLiteDatabase.execSQL("drop table if exists baby");
         sqLiteDatabase.execSQL("drop table if exists diary");
         sqLiteDatabase.execSQL("drop table if exists schedule");
         /*sqLiteDatabase.execSQL("drop table if exists budget");*/

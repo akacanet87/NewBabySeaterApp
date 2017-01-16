@@ -74,7 +74,7 @@ public class MapMarkerAsyncTask extends AsyncTask<Void, Void, Void>{
 
             googleMap.addMarker(new MarkerOptions().title(school.getSchool_name()).snippet("전화 : " + school.getSchool_tel() + "\n선생님 : \" + school.getTeacher_num() + \"명\n원생정원 : \" + school.getMax_stu_num() + \"명\nCCTV : \" + school.getCctv_num() + \"개\n통학버스 : \" + school.getHas_schoolbus() + \"\n주소 : \" + school.getAddress()").icon(BitmapDescriptorFactory.fromResource(R.drawable.school_marker)).position(schoolPos));
 
-            if(i%5000==0){
+            if(i%7000==0){
 
                 Log.d(TAG, "Lat : " + school.getLat() + ", Lon : " + school.getLon());
 

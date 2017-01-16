@@ -43,13 +43,11 @@ public class SchoolDAO{
         Cursor rs = db.rawQuery(sql, null);
 
         if(rs != null){
-            try{
-                count = rs.getCount();
-            }catch(Exception e){
-                e.printStackTrace();
-            }finally{
-                rs.close();
-            }
+
+            count = rs.getCount();
+
+            rs.close();
+
         }
 
         return count;
@@ -134,7 +132,7 @@ public class SchoolDAO{
 
         Cursor rs = db.rawQuery(sql, null);
 
-        try{
+        if(rs != null){
 
             for(rs.moveToFirst(); !rs.isAfterLast(); rs.moveToNext()){
 
@@ -154,9 +152,6 @@ public class SchoolDAO{
 
             }
 
-        }catch(Exception e){
-            e.printStackTrace();
-        }finally{
             rs.close();
         }
 

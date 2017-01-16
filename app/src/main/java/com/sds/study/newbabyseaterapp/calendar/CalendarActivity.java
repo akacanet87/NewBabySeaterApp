@@ -2,11 +2,14 @@ package com.sds.study.newbabyseaterapp.calendar;
 
 import android.Manifest;
 import android.app.Dialog;
+import android.app.TaskStackBuilder;
 import android.app.TimePickerDialog;
+import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.database.sqlite.SQLiteDatabase;
+import android.graphics.Point;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
@@ -21,16 +24,28 @@ import android.support.v7.app.ActionBarDrawerToggle;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
+import android.util.DisplayMetrics;
 import android.util.Log;
+import android.view.Display;
+import android.view.DragEvent;
+import android.view.Gravity;
+import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.MotionEvent;
 import android.view.View;
+import android.view.ViewGroup;
+import android.view.WindowManager;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.AdapterView;
+import android.widget.Button;
+import android.widget.DatePicker;
 import android.widget.EditText;
 import android.widget.ImageButton;
+import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.ListView;
+import android.widget.PopupWindow;
 import android.widget.TextView;
 import android.widget.TimePicker;
 import android.widget.Toast;
@@ -52,12 +67,24 @@ import com.sds.study.newbabyseaterapp.calendar.schedule.ScheduleTag;
 import com.sds.study.newbabyseaterapp.school.SchoolActivity;
 import com.sds.study.newbabyseaterapp.school.SchoolDAO;
 
+import java.lang.reflect.InvocationTargetException;
+import java.util.ArrayList;
 import java.util.Calendar;
 
 public class CalendarActivity extends AppCompatActivity
         implements NavigationView.OnNavigationItemSelectedListener, AdapterView.OnItemClickListener{
 
     InputMethodManager imm;
+    LinearLayout layout_nav_header;
+    DrawerLayout drawer_layout;
+    NavigationView nav_view;
+    PopupWindow set_baby_pop;
+    ImageButton btn_babysetting;
+    ImageView nav_img_babyprofile;
+    TextView nav_txt_babyname, nav_txt_babygender, nav_txt_babybirth, nav_txt_babystellation, nav_txt_babystone, nav_txt_babysince;
+    EditText popup_txt_name, popup_txt_gender;
+    DatePicker popup_datepicker;
+    Button btn_popup_save, btn_popup_cancel;
 
     TextView calendar_txt_yearmonth, calendar_txt_thisdate;
 
@@ -77,6 +104,7 @@ public class CalendarActivity extends AppCompatActivity
     CalendarFragment calendarFragment;
     BabySeaterSqlHelper sqlHelper;    //데이터 베이스 구축
     public static SQLiteDatabase db;  //데이터 베이스 쿼리문 제어
+    Baby baby;
     CalendarDAO calendarDAO;
     SchoolDAO schoolDAO;
     Diary diaryDTO;
@@ -114,10 +142,12 @@ public class CalendarActivity extends AppCompatActivity
     public static final int OVERAY_PERMISSION = 7003;
     public static final int READ_EXST_PERMISSION = 7004;
 
+    int deviceWidth, deviceHeight;
     int today_year, today_month, today_date;
     int this_hour, this_minute, my_hour, my_minute;
     int date_id;
     int ym_id;
+    long day_mills = 86400000;
 
     String TAG;
 
@@ -130,6 +160,8 @@ public class CalendarActivity extends AppCompatActivity
         initDB();
 
         setContentView(R.layout.activity_calendar);
+
+        initDeviceSize();
 
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
@@ -146,6 +178,7 @@ public class CalendarActivity extends AppCompatActivity
         checkPermission(Manifest.permission.RECEIVE_SMS, SMS_PERMISSION);
 
         initCalendar();
+        initBaby();
 
     }
 
@@ -158,6 +191,23 @@ public class CalendarActivity extends AppCompatActivity
         imm = (InputMethodManager) getSystemService(INPUT_METHOD_SERVICE);
 
         layoutContainer = (CoordinatorLayout) findViewById(R.id.layoutContainer);
+
+        //  nav_header
+        drawer_layout = (DrawerLayout) findViewById(R.id.drawer_layout);
+        nav_view = (NavigationView) drawer_layout.findViewById(R.id.nav_view);
+        layout_nav_header = (LinearLayout) nav_view.getHeaderView(0);
+        btn_babysetting = (ImageButton) nav_view.getHeaderView(0).findViewById(R.id.btn_babysetting);
+        nav_txt_babyname = (TextView) nav_view.getHeaderView(0).findViewById(R.id.nav_txt_babyname);
+        nav_txt_babygender = (TextView) nav_view.getHeaderView(0).findViewById(R.id.nav_txt_babygender);
+        nav_txt_babybirth = (TextView) nav_view.getHeaderView(0).findViewById(R.id.nav_txt_babybirth);
+        nav_txt_babystellation = (TextView) nav_view.getHeaderView(0).findViewById(R.id.nav_txt_babystellation);
+        nav_txt_babystone = (TextView) nav_view.getHeaderView(0).findViewById(R.id.nav_txt_babystone);
+        nav_txt_babysince = (TextView) nav_view.getHeaderView(0).findViewById(R.id.nav_txt_babysince);
+        Log.d(TAG, "btn_babysetting : "+btn_babysetting );
+        Log.d(TAG, "nav_txt_babygender : "+nav_txt_babygender );
+        //layout_nav_header = (LinearLayout) nav_view.findViewById(R.id.layout_nav_header);
+
+        Log.d(TAG, "layout_nav_header : " + layout_nav_header);
 
         //  including된 layout들
         inc_layout_calendar = layoutContainer.findViewById(R.id.inc_layout_calendar);
@@ -241,6 +291,80 @@ public class CalendarActivity extends AppCompatActivity
 
 
         //Log.d(TAG, "initDB 완료");
+
+    }
+
+    public void initDeviceSize(){
+
+        WindowManager w = getWindowManager();
+        Display d = w.getDefaultDisplay();
+        DisplayMetrics metrics = new DisplayMetrics();
+        d.getMetrics(metrics);
+        // since SDK_INT = 1;
+        deviceWidth = metrics.widthPixels;
+        deviceHeight = metrics.heightPixels;
+
+
+        try{
+            Point realSize = new Point();
+            Display.class.getMethod("getRealSize", Point.class).invoke(d, realSize);
+            deviceWidth = realSize.x;
+            deviceHeight = realSize.y;
+        }catch(IllegalAccessException e){
+            e.printStackTrace();
+        }catch(InvocationTargetException e){
+            e.printStackTrace();
+        }catch(NoSuchMethodException e){
+            e.printStackTrace();
+        }
+
+    }
+
+    public void initBaby(){
+
+        if(calendarDAO.countBaby()!=0){
+
+            /*ArrayList<Baby> babies = calendarDAO.selectAllBabies();
+
+            for(int i=0 ; i<babies.size() ; i++){
+
+                Baby baby = babies.get(i);
+
+                int baby_id = baby.getBaby_id();
+                String name = baby.getName();
+                String gender = baby.getGender();
+
+                Log.d(TAG, "baby_id : "+baby_id+", name : "+name+", gender : "+gender);
+
+            }*/
+
+            int babyCount = calendarDAO.countBaby();
+
+            Log.d(TAG, "babyCount : " + babyCount);
+
+            Baby myBaby = calendarDAO.selectBaby(babyCount);
+
+            String name = myBaby.getName();
+            String gender =  myBaby.getGender();
+            int year = myBaby.getYear();
+            int month = myBaby.getMonth();
+            int date = myBaby.getDate();
+
+            String birth = year+"."+month+"."+date;
+            int d_day = calDDay(year, month, date);
+            String stellation = getStellation(month, date);
+            String stone = getBabyStone(month);
+
+            myBaby.setBirth(birth);
+            myBaby.setD_day(d_day);
+            myBaby.setStellation(stellation);
+            myBaby.setStone(stone);
+
+            Log.d(TAG, "이름 : "+name+"\n성별 : "+gender+"\n생년월일 : "+birth+"\n태어난지 "+d_day+"일 째\n탄생석 : "+stone+"\n별자리 : "+stellation);
+
+            setNavView(myBaby);
+
+        }
 
     }
 
@@ -446,8 +570,7 @@ public class CalendarActivity extends AppCompatActivity
 
         }
 
-        DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
-        drawer.closeDrawer(GravityCompat.START);
+        drawer_layout.closeDrawer(GravityCompat.START);
         return true;
     }
 
@@ -537,6 +660,29 @@ public class CalendarActivity extends AppCompatActivity
     public void btnCalendarClick(View view){
 
         switch(view.getId()){
+
+            case R.id.btn_babysetting :
+
+                Log.d(TAG, "btn_babysetting 눌림");
+                setBabyInfo();
+
+                break;
+
+            case R.id.btn_popup_save :
+
+                Log.d(TAG, "btn_popup_save 눌림");
+                saveBabyDB();
+                set_baby_pop.dismiss();
+                setNavView(baby);
+
+                break;
+
+            case R.id.btn_popup_cancel :
+
+                Log.d(TAG, "btn_popup_cancel 눌림");
+                set_baby_pop.dismiss();
+
+                break;
 
             case R.id.btn_diary_list:
 
@@ -704,6 +850,142 @@ public class CalendarActivity extends AppCompatActivity
                 break;
 
         }
+
+    }
+
+    public void setBabyInfo(){
+
+        try {
+            //  LayoutInflater 객체와 시킴
+            LayoutInflater inflater = (LayoutInflater) this
+                    .getSystemService(Context.LAYOUT_INFLATER_SERVICE);
+
+            View layout = inflater.inflate(R.layout.layout_babysetting_popup,
+                    (ViewGroup) findViewById(R.id.popup_babysetting));
+
+            set_baby_pop = new PopupWindow(layout, deviceWidth, deviceHeight, true);
+            set_baby_pop.showAtLocation(layout, Gravity.CENTER, 0, 0);
+            set_baby_pop.setOutsideTouchable(false);
+
+            popup_txt_name = (EditText) layout.findViewById(R.id.popup_txt_name);
+            popup_txt_gender = (EditText) layout.findViewById(R.id.popup_txt_gender);
+            popup_datepicker = (DatePicker) layout.findViewById(R.id.popup_datepicker);
+            btn_popup_save = (Button) layout.findViewById(R.id.btn_popup_save);
+            btn_popup_cancel = (Button) layout.findViewById(R.id.btn_popup_cancel);
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+    }
+
+    public void saveBabyDB(){
+
+        String name = popup_txt_name.getText().toString();
+        String gender = popup_txt_gender.getText().toString();
+        int year = popup_datepicker.getYear();
+        int month = popup_datepicker.getMonth()+1;
+        int date = popup_datepicker.getDayOfMonth();
+
+        String birth = year+"."+month+"."+date;
+        int d_day = calDDay(year, month, date);
+        String stellation = getStellation(month, date);
+        String stone = getBabyStone(month);
+
+        Log.d(TAG, "이름 : "+name+"\n성별 : "+gender+"\n생년월일 : "+year+"년 "+month+"월 "+date+"일"+"\n태어난지 "+d_day+"일 째");
+
+        baby = new Baby();
+        baby.setName(name);
+        baby.setGender(gender);
+        baby.setYear(year);
+        baby.setMonth(month);
+        baby.setDate(date);
+        baby.setBirth(birth);
+        baby.setD_day(d_day);
+        baby.setStellation(stellation);
+        baby.setStone(stone);
+
+        calendarDAO.insertBaby(name, gender, year, month, date);
+
+        Log.d(TAG, "아이 저장 완료!");
+
+    }
+
+    public void setNavView(Baby baby){
+
+        nav_txt_babyname.setText(baby.getName());
+        nav_txt_babygender.setText(baby.getGender());
+        nav_txt_babybirth.setText(baby.getBirth());
+        nav_txt_babysince.setText(Integer.toString(baby.getD_day()));
+        nav_txt_babystellation.setText(baby.getStellation());
+        nav_txt_babystone.setText(baby.getStone());
+
+    }
+
+    public int calDDay( int year, int month, int date ){
+
+        Calendar d_cal = Calendar.getInstance();
+        Calendar today_cal = Calendar.getInstance();
+        today_cal.set(TODAY_YEAR, TODAY_MONTH, TODAY_DATE);
+        d_cal.set(year, month, date);
+
+        long d_day = d_cal.getTimeInMillis()/day_mills;
+        long today = today_cal.getTimeInMillis()/day_mills;
+
+        long count = today-d_day;
+        int final_day = (int) count+1;
+
+        return final_day;
+
+    }
+
+    public String getStellation(int month, int date){
+
+        String stellation=null;
+
+        switch(month){
+
+            case 1 : if(date>=20){stellation="물병";}else{stellation="염소";} break;
+            case 2 : if(date>=19){stellation="물고기";}else{stellation="물병";} break;
+            case 3 : if(date>=21){stellation="양";}else{stellation="물고기";} break;
+            case 4 : if(date>=20){stellation="황소";}else{stellation="양";} break;
+            case 5 : if(date>=21){stellation="쌍둥이";}else{stellation="황소";} break;
+            case 6 : if(date>=22){stellation="게";}else{stellation="쌍둥이";} break;
+            case 7 : if(date>=23){stellation="사자";}else{stellation="게";} break;
+            case 8 : if(date>=23){stellation="처녀";}else{stellation="사자";} break;
+            case 9 : if(date>=24){stellation="천칭";}else{stellation="처녀";} break;
+            case 10 : if(date>=24){stellation="전갈";}else{stellation="천칭";} break;
+            case 11 : if(date>=23){stellation="사수";}else{stellation="전갈";} break;
+            case 12 : if(date>=25){stellation="염소";}else{stellation="사수";} break;
+
+        }
+
+        return stellation+"자리";
+
+    }
+
+    public String getBabyStone(int month){
+
+        String stone=null;
+
+        switch(month){
+
+            case 1 : stone = "가넷(진실,우정)"; break;
+            case 2 : stone = "자수정(평화,성실)"; break;
+            case 3 : stone = "아쿠아마린(총명)"; break;
+            case 4 : stone = "다이아몬드(고귀)"; break;
+            case 5 : stone = "에메랄드(행복)"; break;
+            case 6 : stone = "진주(건강,부귀)"; break;
+            case 7 : stone = "루비(용기,정의)"; break;
+            case 8 : stone = "페리도트(화합)"; break;
+            case 9 : stone = "사파이어(진리)"; break;
+            case 10 : stone = "오팔(희망,순결)"; break;
+            case 11 : stone = "토파즈(우정)"; break;
+            case 12 : stone = "터키석(성공,승리)"; break;
+
+        }
+
+        return stone;
 
     }
 
