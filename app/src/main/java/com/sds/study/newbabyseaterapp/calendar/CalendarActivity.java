@@ -9,10 +9,14 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.database.sqlite.SQLiteDatabase;
+import android.graphics.Bitmap;
 import android.graphics.Point;
+import android.net.Uri;
 import android.os.Bundle;
+import android.os.Environment;
 import android.os.Handler;
 import android.os.Message;
+import android.provider.MediaStore;
 import android.support.annotation.NonNull;
 import android.support.design.widget.CoordinatorLayout;
 import android.support.design.widget.NavigationView;
@@ -67,6 +71,10 @@ import com.sds.study.newbabyseaterapp.calendar.schedule.ScheduleTag;
 import com.sds.study.newbabyseaterapp.school.SchoolActivity;
 import com.sds.study.newbabyseaterapp.school.SchoolDAO;
 
+import java.io.BufferedOutputStream;
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -75,6 +83,7 @@ public class CalendarActivity extends AppCompatActivity
         implements NavigationView.OnNavigationItemSelectedListener, AdapterView.OnItemClickListener{
 
     InputMethodManager imm;
+    Uri imgUri;
     LinearLayout layout_nav_header;
     DrawerLayout drawer_layout;
     NavigationView nav_view;
@@ -141,6 +150,10 @@ public class CalendarActivity extends AppCompatActivity
     public static final int FINE_LOC_PERMISSION = 7002;
     public static final int OVERAY_PERMISSION = 7003;
     public static final int READ_EXST_PERMISSION = 7004;
+    public static final int WRITE_EXST_PERMISSION = 7005;
+    public static final int FROM_CAMERA = 8000;
+    public static final int FROM_ALBUM = 8001;
+    public static final int CROP_IMG = 8002;
 
     int deviceWidth, deviceHeight;
     int today_year, today_month, today_date;
@@ -197,17 +210,18 @@ public class CalendarActivity extends AppCompatActivity
         nav_view = (NavigationView) drawer_layout.findViewById(R.id.nav_view);
         layout_nav_header = (LinearLayout) nav_view.getHeaderView(0);
         btn_babysetting = (ImageButton) nav_view.getHeaderView(0).findViewById(R.id.btn_babysetting);
+        nav_img_babyprofile = (ImageView) nav_view.getHeaderView(0).findViewById(R.id.nav_img_babyprofile);
         nav_txt_babyname = (TextView) nav_view.getHeaderView(0).findViewById(R.id.nav_txt_babyname);
         nav_txt_babygender = (TextView) nav_view.getHeaderView(0).findViewById(R.id.nav_txt_babygender);
         nav_txt_babybirth = (TextView) nav_view.getHeaderView(0).findViewById(R.id.nav_txt_babybirth);
         nav_txt_babystellation = (TextView) nav_view.getHeaderView(0).findViewById(R.id.nav_txt_babystellation);
         nav_txt_babystone = (TextView) nav_view.getHeaderView(0).findViewById(R.id.nav_txt_babystone);
         nav_txt_babysince = (TextView) nav_view.getHeaderView(0).findViewById(R.id.nav_txt_babysince);
-        Log.d(TAG, "btn_babysetting : "+btn_babysetting );
-        Log.d(TAG, "nav_txt_babygender : "+nav_txt_babygender );
+        //Log.d(TAG, "btn_babysetting : "+btn_babysetting );
+        //Log.d(TAG, "nav_txt_babygender : "+nav_txt_babygender );
         //layout_nav_header = (LinearLayout) nav_view.findViewById(R.id.layout_nav_header);
 
-        Log.d(TAG, "layout_nav_header : " + layout_nav_header);
+        //Log.d(TAG, "layout_nav_header : " + layout_nav_header);
 
         //  including된 layout들
         inc_layout_calendar = layoutContainer.findViewById(R.id.inc_layout_calendar);
@@ -243,7 +257,7 @@ public class CalendarActivity extends AppCompatActivity
         daily_schedule_list = (ListView) inc_layout_schedulelist.findViewById(R.id.daily_schedule_list);
         daily_schedule_list.setOnItemClickListener(this);
 
-        Log.d(TAG, "OneMonthFragment 생성 전");
+        //Log.d(TAG, "OneMonthFragment 생성 전");
 
         calendarFragment = (CalendarFragment) getSupportFragmentManager().findFragmentById(R.id.fragment_calendar);
         calendarFragment.setOnMonthChangeListener(new OnMonthChangeListener(){
@@ -340,7 +354,7 @@ public class CalendarActivity extends AppCompatActivity
 
             int babyCount = calendarDAO.countBaby();
 
-            Log.d(TAG, "babyCount : " + babyCount);
+            //Log.d(TAG, "babyCount : " + babyCount);
 
             Baby myBaby = calendarDAO.selectBaby(babyCount);
 
@@ -360,7 +374,7 @@ public class CalendarActivity extends AppCompatActivity
             myBaby.setStellation(stellation);
             myBaby.setStone(stone);
 
-            Log.d(TAG, "이름 : "+name+"\n성별 : "+gender+"\n생년월일 : "+birth+"\n태어난지 "+d_day+"일 째\n탄생석 : "+stone+"\n별자리 : "+stellation);
+            //Log.d(TAG, "이름 : "+name+"\n성별 : "+gender+"\n생년월일 : "+birth+"\n태어난지 "+d_day+"일 째\n탄생석 : "+stone+"\n별자리 : "+stellation);
 
             setNavView(myBaby);
 
@@ -404,7 +418,7 @@ public class CalendarActivity extends AppCompatActivity
 
                 break;
 
-            /*case READ_EXST_PERMISSION :
+            case READ_EXST_PERMISSION :
 
                 if(permissions.length > 0 && grantResults[0] == PackageManager.PERMISSION_DENIED){
                     showAlertMsg("내장 디렉토리 읽기 권한 안내", "권한을 부여하지 않으면 일부 기능을 사용 할 수 없습니다.");
@@ -412,7 +426,15 @@ public class CalendarActivity extends AppCompatActivity
                     return;
                 }
 
-                break;*/
+            case WRITE_EXST_PERMISSION :
+
+                if(permissions.length > 0 && grantResults[0] == PackageManager.PERMISSION_DENIED){
+                    showAlertMsg("내장 디렉토리 쓰기 권한 안내", "권한을 부여하지 않으면 일부 기능을 사용 할 수 없습니다.");
+
+                    return;
+                }
+
+                break;
 
             case FINE_LOC_PERMISSION:
 
@@ -455,7 +477,7 @@ public class CalendarActivity extends AppCompatActivity
     public void onBackPressed(){
 
         Log.d(TAG, "back버튼 눌림");
-        Log.d(TAG, "date_id는 " + date_id);
+        //Log.d(TAG, "date_id는 " + date_id);
 
         DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
         if(drawer.isDrawerOpen(GravityCompat.START)){
@@ -657,6 +679,56 @@ public class CalendarActivity extends AppCompatActivity
 
     }
 
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data){
+
+        if(resultCode != RESULT_OK){
+
+            return;
+
+        }
+
+        switch(requestCode){
+
+            case FROM_ALBUM :
+
+                imgUri = data.getData();
+
+            case FROM_CAMERA :
+
+                Intent intent = new Intent("com.android.camera.action.CROP");
+                intent.setDataAndType(imgUri, "image/*");
+
+                intent.putExtra("outputX", 180);
+                intent.putExtra("outputY", 240);
+                intent.putExtra("aspectX", 1);
+                intent.putExtra("aspectY", 1);
+                intent.putExtra("scale", true);
+                intent.putExtra("return-data", true);
+                startActivityForResult(intent, CROP_IMG);
+
+                break;
+
+            case CROP_IMG :
+
+                Bundle bundle = data.getExtras();
+                String filePath = Environment.getExternalStorageDirectory().getAbsolutePath()+"/BabySeater/"+System.currentTimeMillis()+".jpg";
+
+                if(bundle!=null){
+
+                    Bitmap bitmap = bundle.getParcelable("data");
+                    nav_img_babyprofile.setImageBitmap(bitmap);
+
+                    storeCropImage( bitmap, filePath );
+
+                }
+
+                break;
+
+        }
+
+    }
+
     public void btnCalendarClick(View view){
 
         switch(view.getId()){
@@ -665,6 +737,15 @@ public class CalendarActivity extends AppCompatActivity
 
                 Log.d(TAG, "btn_babysetting 눌림");
                 setBabyInfo();
+
+                break;
+
+            case R.id.nav_img_babyprofile :
+
+                Log.d(TAG, "nav_img_babyprofile 눌림");
+                checkPermission(Manifest.permission.READ_EXTERNAL_STORAGE, READ_EXST_PERMISSION);
+                checkPermission(Manifest.permission.WRITE_EXTERNAL_STORAGE, WRITE_EXST_PERMISSION);
+                setBabyImgDialog();
 
                 break;
 
@@ -853,6 +934,92 @@ public class CalendarActivity extends AppCompatActivity
 
     }
 
+    public void setBabyImgDialog(){
+
+        DialogInterface.OnClickListener camera = new DialogInterface.OnClickListener(){
+
+            @Override
+            public void onClick(DialogInterface dialogInterface, int i){
+
+                takePhoto();
+
+            }
+
+        };
+
+        DialogInterface.OnClickListener album = new DialogInterface.OnClickListener(){
+
+            @Override
+            public void onClick(DialogInterface dialogInterface, int i){
+
+                takeAlbum();
+
+            }
+
+        };
+
+        DialogInterface.OnClickListener cancel = new DialogInterface.OnClickListener(){
+
+            @Override
+            public void onClick(DialogInterface dialogInterface, int i){
+
+                dialogInterface.dismiss();
+
+            }
+
+        };
+
+        new AlertDialog.Builder(this).setTitle("업로드할 이미지 선택 방법").setPositiveButton("사진촬영", camera).setNeutralButton("취소", cancel).setNegativeButton("앨범선택", album).show();
+
+    }
+
+    public void takePhoto(){
+
+        Intent cameraIntent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
+
+        String url = "bs_"+String.valueOf(System.currentTimeMillis()) + ".jpg";
+        imgUri = Uri.fromFile(new File(Environment.getExternalStorageDirectory(), url));
+
+        cameraIntent.putExtra(MediaStore.EXTRA_OUTPUT, imgUri);
+        startActivityForResult(cameraIntent, FROM_CAMERA);
+
+    }
+
+    public void takeAlbum(){
+
+        Intent albumIntent = new Intent(Intent.ACTION_PICK);
+        albumIntent.setType(MediaStore.Images.Media.CONTENT_TYPE);
+        startActivityForResult(albumIntent, FROM_ALBUM);
+
+    }
+
+    public void storeCropImage( Bitmap bitmap, String path ){
+
+        String dirPath = Environment.getDownloadCacheDirectory().getAbsolutePath()+"/BabySeater";
+        File dirBabySeater = new File(dirPath);
+        if(!dirBabySeater.exists()){
+
+            dirBabySeater.mkdir();
+
+        }
+
+        File copyFile = new File(path);
+        BufferedOutputStream buffO = null;
+
+        try{
+            copyFile.createNewFile();
+            buffO = new BufferedOutputStream( new FileOutputStream(copyFile));
+            bitmap.compress(Bitmap.CompressFormat.JPEG, 100, buffO);
+
+            sendBroadcast(new Intent(Intent.ACTION_MEDIA_SCANNER_SCAN_FILE, Uri.fromFile(copyFile)));
+            buffO.flush();
+            buffO.close();
+        }catch(IOException e){
+            e.printStackTrace();
+        }
+
+    }
+
     public void setBabyInfo(){
 
         try {
@@ -892,7 +1059,7 @@ public class CalendarActivity extends AppCompatActivity
         String stellation = getStellation(month, date);
         String stone = getBabyStone(month);
 
-        Log.d(TAG, "이름 : "+name+"\n성별 : "+gender+"\n생년월일 : "+year+"년 "+month+"월 "+date+"일"+"\n태어난지 "+d_day+"일 째");
+        //Log.d(TAG, "이름 : "+name+"\n성별 : "+gender+"\n생년월일 : "+year+"년 "+month+"월 "+date+"일"+"\n태어난지 "+d_day+"일 째");
 
         baby = new Baby();
         baby.setName(name);

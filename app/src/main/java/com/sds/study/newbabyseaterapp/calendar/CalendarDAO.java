@@ -67,18 +67,18 @@ public class CalendarDAO{
 
         String sql = "select * from baby where baby_id=" + id;
 
-        Log.d(TAG, "id : " + id);
-        Log.d(TAG, "sql : " + sql);
+        //Log.d(TAG, "id : " + id);
+        //Log.d(TAG, "sql : " + sql);
 
         Baby baby = new Baby();
         Cursor rs = db.rawQuery(sql, null);
         rs.moveToFirst();
 
-        Log.d(TAG, "rs : " + rs);
+        //Log.d(TAG, "rs : " + rs);
 
         if(rs != null){
 
-            Log.d(TAG, "if문 들어옴");
+            //Log.d(TAG, "if문 들어옴");
 
             baby.setName(rs.getString(rs.getColumnIndex("name")));
             baby.setGender(rs.getString(rs.getColumnIndex("gender")));
@@ -86,13 +86,13 @@ public class CalendarDAO{
             baby.setMonth(rs.getInt(rs.getColumnIndex("month")));
             baby.setDate(rs.getInt(rs.getColumnIndex("date")));
 
-            Log.d(TAG, "baby세팅 완료");
+            //Log.d(TAG, "baby세팅 완료");
 
             rs.close();
 
         }
 
-        Log.d(TAG, "이름 : " + baby.getName() + "\n성별 : " + baby.getGender() + "\n생년월일 : " + baby.getYear() + "." + baby.getMonth() + "." + baby.getDate() + "\nload baby 완료");
+        //Log.d(TAG, "이름 : " + baby.getName() + "\n성별 : " + baby.getGender() + "\n생년월일 : " + baby.getYear() + "." + baby.getMonth() + "." + baby.getDate() + "\nload baby 완료");
 
         return baby;
 

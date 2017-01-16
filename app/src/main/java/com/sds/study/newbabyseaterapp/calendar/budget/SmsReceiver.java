@@ -14,6 +14,8 @@ public class SmsReceiver extends BroadcastReceiver{
 
     String TAG;
 
+    String[] cardNames = {"KB", "기업"};
+
     public SmsReceiver() {
         TAG=this.getClass().getName()+"/Canet";
     }
@@ -56,11 +58,15 @@ public class SmsReceiver extends BroadcastReceiver{
 
                 }
 
-                startIntent.putExtra("sms", sms.toString());
+                if(isSpendSms(sms.toString())){
 
-                context.startActivity(startIntent);
+                    startIntent.putExtra("sms", sms.toString());
 
-                msgCut(sms.toString(), context);
+                    context.startActivity(startIntent);
+
+                    msgCut(sms.toString(), context);
+
+                }
 
             }
         }
@@ -75,6 +81,24 @@ public class SmsReceiver extends BroadcastReceiver{
             Log.d(TAG, i+"번째 라인 : "+msgarr[i]);
 
         }
+
+    }
+
+    public boolean isSpendSms( String sms ){
+
+        boolean flag=false;
+
+        for( int i=0 ; i<cardNames.length ; i++ ){
+
+            if(sms.contains(cardNames[i])){
+
+                flag = true;
+
+            }
+
+        }
+
+        return flag;
 
     }
 
