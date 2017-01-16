@@ -37,6 +37,15 @@ public class BabySeaterSqlHelper extends SQLiteOpenHelper{
 
         sqLiteDatabase.execSQL(baby_sql.toString());
 
+        StringBuffer picture_sql=new StringBuffer();
+
+        picture_sql.append("create table picture(");
+        picture_sql.append("picture_id integer primary key autoincrement");
+        picture_sql.append(",img_path blob");
+        picture_sql.append(");");
+
+        sqLiteDatabase.execSQL(picture_sql.toString());
+
         StringBuffer diary_sql=new StringBuffer();
 
         diary_sql.append("create table diary(");

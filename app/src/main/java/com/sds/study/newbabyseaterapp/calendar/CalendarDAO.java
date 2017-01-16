@@ -63,6 +63,27 @@ public class CalendarDAO{
 
     }
 
+    public byte[] selectImg( int id ){
+
+        String sql = "select img_path from picture where picture_id=" + id;
+
+        byte[] img_path = null;
+
+        Cursor rs = db.rawQuery(sql, null);
+        rs.moveToFirst();
+
+        if(rs != null){
+
+            img_path = rs.getBlob(rs.getColumnIndex("img_path"));
+
+            rs.close();
+
+        }
+
+        return img_path;
+
+    }
+
     public Baby selectBaby(int id){
 
         String sql = "select * from baby where baby_id=" + id;
@@ -95,6 +116,21 @@ public class CalendarDAO{
         //Log.d(TAG, "이름 : " + baby.getName() + "\n성별 : " + baby.getGender() + "\n생년월일 : " + baby.getYear() + "." + baby.getMonth() + "." + baby.getDate() + "\nload baby 완료");
 
         return baby;
+
+    }
+
+    public void insertImage( String img_path ){
+
+        String sql = "insert into picture(img_path)";
+        sql += " values(?)";
+
+        Log.d(TAG, "img_path : " + img_path);
+
+        db.execSQL(sql, new String[]{
+
+                img_path
+
+        });
 
     }
 
@@ -140,6 +176,26 @@ public class CalendarDAO{
         });
 
         Log.d(TAG, "스케줄 등록 완료");
+
+    }
+
+    public int countImg(){
+
+        int imgCount = 0;
+
+        String sql = "select picture_id from picture";
+
+        Cursor rs = db.rawQuery(sql, null);
+
+        if(rs != null){
+
+            imgCount = rs.getCount();
+
+            rs.close();
+
+        }
+
+        return imgCount;
 
     }
 

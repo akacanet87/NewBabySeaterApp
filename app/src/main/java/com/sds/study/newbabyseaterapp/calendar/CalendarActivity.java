@@ -10,6 +10,7 @@ import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.database.sqlite.SQLiteDatabase;
 import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.graphics.Point;
 import android.net.Uri;
 import android.os.Bundle;
@@ -71,7 +72,9 @@ import com.sds.study.newbabyseaterapp.calendar.schedule.ScheduleTag;
 import com.sds.study.newbabyseaterapp.school.SchoolActivity;
 import com.sds.study.newbabyseaterapp.school.SchoolDAO;
 
+import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
+import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -191,6 +194,7 @@ public class CalendarActivity extends AppCompatActivity
         checkPermission(Manifest.permission.RECEIVE_SMS, SMS_PERMISSION);
 
         initCalendar();
+        initImg();
         initBaby();
 
     }
@@ -377,6 +381,19 @@ public class CalendarActivity extends AppCompatActivity
             //Log.d(TAG, "이름 : "+name+"\n성별 : "+gender+"\n생년월일 : "+birth+"\n태어난지 "+d_day+"일 째\n탄생석 : "+stone+"\n별자리 : "+stellation);
 
             setNavView(myBaby);
+
+        }
+
+    }
+
+    public void initImg(){
+
+        if(calendarDAO.countImg()!=0){
+
+            byte[] img_path = calendarDAO.selectImg(calendarDAO.countImg());
+            ByteArrayInputStream imgStream = new ByteArrayInputStream(img_path);
+            Bitmap bitmap = BitmapFactory.decodeStream(imgStream);
+            nav_img_babyprofile.setImageBitmap(bitmap);
 
         }
 
@@ -995,13 +1012,16 @@ public class CalendarActivity extends AppCompatActivity
 
     public void storeCropImage( Bitmap bitmap, String path ){
 
-        String dirPath = Environment.getDownloadCacheDirectory().getAbsolutePath()+"/BabySeater";
+        //String dirPath = Environment.getDownloadCacheDirectory().getAbsolutePath()+"/BabySeater";
+        String dirPath = Environment.getExternalStorageDirectory().getAbsolutePath()+"/BabySeater";
         File dirBabySeater = new File(dirPath);
         if(!dirBabySeater.exists()){
 
             dirBabySeater.mkdir();
 
         }
+
+        calendarDAO.insertImage(dirPath);
 
         File copyFile = new File(path);
         BufferedOutputStream buffO = null;
