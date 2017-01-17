@@ -63,22 +63,24 @@ public class CalendarDAO{
 
     }
 
-    public byte[] selectImg( int id ){
+    public String selectImg( int id ){
 
         String sql = "select img_path from picture where picture_id=" + id;
 
-        byte[] img_path = null;
+        String img_path = null;
 
         Cursor rs = db.rawQuery(sql, null);
         rs.moveToFirst();
 
         if(rs != null){
 
-            img_path = rs.getBlob(rs.getColumnIndex("img_path"));
+            img_path = rs.getString(rs.getColumnIndex("img_path"));
 
             rs.close();
 
         }
+
+        Log.d(TAG, "이미지 db에서 불러오기");
 
         return img_path;
 
@@ -131,6 +133,8 @@ public class CalendarDAO{
                 img_path
 
         });
+
+        Log.d(TAG, "이미지 저장 완료");
 
     }
 

@@ -2,7 +2,6 @@ package com.sds.study.newbabyseaterapp.calendar;
 
 import android.Manifest;
 import android.app.Dialog;
-import android.app.TaskStackBuilder;
 import android.app.TimePickerDialog;
 import android.content.Context;
 import android.content.DialogInterface;
@@ -32,12 +31,10 @@ import android.support.v7.widget.Toolbar;
 import android.util.DisplayMetrics;
 import android.util.Log;
 import android.view.Display;
-import android.view.DragEvent;
 import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
-import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.WindowManager;
@@ -74,12 +71,12 @@ import com.sds.study.newbabyseaterapp.school.SchoolDAO;
 
 import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
-import java.io.ByteArrayInputStream;
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
-import java.util.ArrayList;
 import java.util.Calendar;
 
 public class CalendarActivity extends AppCompatActivity
@@ -340,7 +337,7 @@ public class CalendarActivity extends AppCompatActivity
 
     public void initBaby(){
 
-        if(calendarDAO.countBaby()!=0){
+        if(calendarDAO.countBaby() != 0){
 
             /*ArrayList<Baby> babies = calendarDAO.selectAllBabies();
 
@@ -363,12 +360,12 @@ public class CalendarActivity extends AppCompatActivity
             Baby myBaby = calendarDAO.selectBaby(babyCount);
 
             String name = myBaby.getName();
-            String gender =  myBaby.getGender();
+            String gender = myBaby.getGender();
             int year = myBaby.getYear();
             int month = myBaby.getMonth();
             int date = myBaby.getDate();
 
-            String birth = year+"."+month+"."+date;
+            String birth = year + "." + month + "." + date;
             int d_day = calDDay(year, month, date);
             String stellation = getStellation(month, date);
             String stone = getBabyStone(month);
@@ -388,12 +385,29 @@ public class CalendarActivity extends AppCompatActivity
 
     public void initImg(){
 
-        if(calendarDAO.countImg()!=0){
+        if(calendarDAO.countImg() != 0){
 
-            byte[] img_path = calendarDAO.selectImg(calendarDAO.countImg());
-            ByteArrayInputStream imgStream = new ByteArrayInputStream(img_path);
-            Bitmap bitmap = BitmapFactory.decodeStream(imgStream);
-            nav_img_babyprofile.setImageBitmap(bitmap);
+            String img_path = calendarDAO.selectImg(calendarDAO.countImg());
+
+            File file = new File(img_path);
+            BufferedInputStream buffI = null;
+
+            try{
+                buffI = new BufferedInputStream(new FileInputStream(file));
+                Bitmap bitmap = BitmapFactory.decodeStream(buffI);
+                nav_img_babyprofile.setImageBitmap(bitmap);
+
+            }catch(FileNotFoundException e){
+                e.printStackTrace();
+            }finally{
+                if(buffI != null){
+                    try{
+                        buffI.close();
+                    }catch(IOException e){
+                        e.printStackTrace();
+                    }
+                }
+            }
 
         }
 
@@ -435,7 +449,7 @@ public class CalendarActivity extends AppCompatActivity
 
                 break;
 
-            case READ_EXST_PERMISSION :
+            case READ_EXST_PERMISSION:
 
                 if(permissions.length > 0 && grantResults[0] == PackageManager.PERMISSION_DENIED){
                     showAlertMsg("내장 디렉토리 읽기 권한 안내", "권한을 부여하지 않으면 일부 기능을 사용 할 수 없습니다.");
@@ -443,7 +457,7 @@ public class CalendarActivity extends AppCompatActivity
                     return;
                 }
 
-            case WRITE_EXST_PERMISSION :
+            case WRITE_EXST_PERMISSION:
 
                 if(permissions.length > 0 && grantResults[0] == PackageManager.PERMISSION_DENIED){
                     showAlertMsg("내장 디렉토리 쓰기 권한 안내", "권한을 부여하지 않으면 일부 기능을 사용 할 수 없습니다.");
@@ -707,11 +721,12 @@ public class CalendarActivity extends AppCompatActivity
 
         switch(requestCode){
 
-            case FROM_ALBUM :
+            case FROM_ALBUM:
 
                 imgUri = data.getData();
+                Log.d(TAG, "imgUri : " + imgUri);
 
-            case FROM_CAMERA :
+            case FROM_CAMERA:
 
                 Intent intent = new Intent("com.android.camera.action.CROP");
                 intent.setDataAndType(imgUri, "image/*");
@@ -726,17 +741,17 @@ public class CalendarActivity extends AppCompatActivity
 
                 break;
 
-            case CROP_IMG :
+            case CROP_IMG:
 
                 Bundle bundle = data.getExtras();
-                String filePath = Environment.getExternalStorageDirectory().getAbsolutePath()+"/BabySeater/"+System.currentTimeMillis()+".jpg";
+                String filePath = Environment.getExternalStorageDirectory().getAbsolutePath() + "/BabySeater/" + System.currentTimeMillis() + ".jpg";
 
-                if(bundle!=null){
+                if(bundle != null){
 
                     Bitmap bitmap = bundle.getParcelable("data");
                     nav_img_babyprofile.setImageBitmap(bitmap);
 
-                    storeCropImage( bitmap, filePath );
+                    storeCropImage(bitmap, filePath);
 
                 }
 
@@ -750,14 +765,14 @@ public class CalendarActivity extends AppCompatActivity
 
         switch(view.getId()){
 
-            case R.id.btn_babysetting :
+            case R.id.btn_babysetting:
 
                 Log.d(TAG, "btn_babysetting 눌림");
                 setBabyInfo();
 
                 break;
 
-            case R.id.nav_img_babyprofile :
+            case R.id.nav_img_babyprofile:
 
                 Log.d(TAG, "nav_img_babyprofile 눌림");
                 checkPermission(Manifest.permission.READ_EXTERNAL_STORAGE, READ_EXST_PERMISSION);
@@ -766,7 +781,7 @@ public class CalendarActivity extends AppCompatActivity
 
                 break;
 
-            case R.id.btn_popup_save :
+            case R.id.btn_popup_save:
 
                 Log.d(TAG, "btn_popup_save 눌림");
                 saveBabyDB();
@@ -775,7 +790,7 @@ public class CalendarActivity extends AppCompatActivity
 
                 break;
 
-            case R.id.btn_popup_cancel :
+            case R.id.btn_popup_cancel:
 
                 Log.d(TAG, "btn_popup_cancel 눌림");
                 set_baby_pop.dismiss();
@@ -994,7 +1009,7 @@ public class CalendarActivity extends AppCompatActivity
 
         Intent cameraIntent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
 
-        String url = "bs_"+String.valueOf(System.currentTimeMillis()) + ".jpg";
+        String url = "bs_" + String.valueOf(System.currentTimeMillis()) + ".jpg";
         imgUri = Uri.fromFile(new File(Environment.getExternalStorageDirectory(), url));
 
         cameraIntent.putExtra(MediaStore.EXTRA_OUTPUT, imgUri);
@@ -1010,10 +1025,10 @@ public class CalendarActivity extends AppCompatActivity
 
     }
 
-    public void storeCropImage( Bitmap bitmap, String path ){
+    public void storeCropImage(Bitmap bitmap, String path){
 
         //String dirPath = Environment.getDownloadCacheDirectory().getAbsolutePath()+"/BabySeater";
-        String dirPath = Environment.getExternalStorageDirectory().getAbsolutePath()+"/BabySeater";
+        String dirPath = Environment.getExternalStorageDirectory().getAbsolutePath() + "/BabySeater";
         File dirBabySeater = new File(dirPath);
         if(!dirBabySeater.exists()){
 
@@ -1021,14 +1036,16 @@ public class CalendarActivity extends AppCompatActivity
 
         }
 
-        calendarDAO.insertImage(dirPath);
+        calendarDAO.insertImage(path);
+
+        Log.d(TAG, "path : " + path);
 
         File copyFile = new File(path);
         BufferedOutputStream buffO = null;
 
         try{
             copyFile.createNewFile();
-            buffO = new BufferedOutputStream( new FileOutputStream(copyFile));
+            buffO = new BufferedOutputStream(new FileOutputStream(copyFile));
             bitmap.compress(Bitmap.CompressFormat.JPEG, 100, buffO);
 
             sendBroadcast(new Intent(Intent.ACTION_MEDIA_SCANNER_SCAN_FILE, Uri.fromFile(copyFile)));
@@ -1042,7 +1059,7 @@ public class CalendarActivity extends AppCompatActivity
 
     public void setBabyInfo(){
 
-        try {
+        try{
             //  LayoutInflater 객체와 시킴
             LayoutInflater inflater = (LayoutInflater) this
                     .getSystemService(Context.LAYOUT_INFLATER_SERVICE);
@@ -1060,7 +1077,7 @@ public class CalendarActivity extends AppCompatActivity
             btn_popup_save = (Button) layout.findViewById(R.id.btn_popup_save);
             btn_popup_cancel = (Button) layout.findViewById(R.id.btn_popup_cancel);
 
-        } catch (Exception e) {
+        }catch(Exception e){
             e.printStackTrace();
         }
 
@@ -1071,10 +1088,10 @@ public class CalendarActivity extends AppCompatActivity
         String name = popup_txt_name.getText().toString();
         String gender = popup_txt_gender.getText().toString();
         int year = popup_datepicker.getYear();
-        int month = popup_datepicker.getMonth()+1;
+        int month = popup_datepicker.getMonth() + 1;
         int date = popup_datepicker.getDayOfMonth();
 
-        String birth = year+"."+month+"."+date;
+        String birth = year + "." + month + "." + date;
         int d_day = calDDay(year, month, date);
         String stellation = getStellation(month, date);
         String stone = getBabyStone(month);
@@ -1109,18 +1126,18 @@ public class CalendarActivity extends AppCompatActivity
 
     }
 
-    public int calDDay( int year, int month, int date ){
+    public int calDDay(int year, int month, int date){
 
         Calendar d_cal = Calendar.getInstance();
         Calendar today_cal = Calendar.getInstance();
         today_cal.set(TODAY_YEAR, TODAY_MONTH, TODAY_DATE);
         d_cal.set(year, month, date);
 
-        long d_day = d_cal.getTimeInMillis()/day_mills;
-        long today = today_cal.getTimeInMillis()/day_mills;
+        long d_day = d_cal.getTimeInMillis() / day_mills;
+        long today = today_cal.getTimeInMillis() / day_mills;
 
-        long count = today-d_day;
-        int final_day = (int) count+1;
+        long count = today - d_day;
+        int final_day = (int) count + 1;
 
         return final_day;
 
@@ -1128,47 +1145,143 @@ public class CalendarActivity extends AppCompatActivity
 
     public String getStellation(int month, int date){
 
-        String stellation=null;
+        String stellation = null;
 
         switch(month){
 
-            case 1 : if(date>=20){stellation="물병";}else{stellation="염소";} break;
-            case 2 : if(date>=19){stellation="물고기";}else{stellation="물병";} break;
-            case 3 : if(date>=21){stellation="양";}else{stellation="물고기";} break;
-            case 4 : if(date>=20){stellation="황소";}else{stellation="양";} break;
-            case 5 : if(date>=21){stellation="쌍둥이";}else{stellation="황소";} break;
-            case 6 : if(date>=22){stellation="게";}else{stellation="쌍둥이";} break;
-            case 7 : if(date>=23){stellation="사자";}else{stellation="게";} break;
-            case 8 : if(date>=23){stellation="처녀";}else{stellation="사자";} break;
-            case 9 : if(date>=24){stellation="천칭";}else{stellation="처녀";} break;
-            case 10 : if(date>=24){stellation="전갈";}else{stellation="천칭";} break;
-            case 11 : if(date>=23){stellation="사수";}else{stellation="전갈";} break;
-            case 12 : if(date>=25){stellation="염소";}else{stellation="사수";} break;
+            case 1:
+                if(date >= 20){
+                    stellation = "물병";
+                }else{
+                    stellation = "염소";
+                }
+                break;
+            case 2:
+                if(date >= 19){
+                    stellation = "물고기";
+                }else{
+                    stellation = "물병";
+                }
+                break;
+            case 3:
+                if(date >= 21){
+                    stellation = "양";
+                }else{
+                    stellation = "물고기";
+                }
+                break;
+            case 4:
+                if(date >= 20){
+                    stellation = "황소";
+                }else{
+                    stellation = "양";
+                }
+                break;
+            case 5:
+                if(date >= 21){
+                    stellation = "쌍둥이";
+                }else{
+                    stellation = "황소";
+                }
+                break;
+            case 6:
+                if(date >= 22){
+                    stellation = "게";
+                }else{
+                    stellation = "쌍둥이";
+                }
+                break;
+            case 7:
+                if(date >= 23){
+                    stellation = "사자";
+                }else{
+                    stellation = "게";
+                }
+                break;
+            case 8:
+                if(date >= 23){
+                    stellation = "처녀";
+                }else{
+                    stellation = "사자";
+                }
+                break;
+            case 9:
+                if(date >= 24){
+                    stellation = "천칭";
+                }else{
+                    stellation = "처녀";
+                }
+                break;
+            case 10:
+                if(date >= 24){
+                    stellation = "전갈";
+                }else{
+                    stellation = "천칭";
+                }
+                break;
+            case 11:
+                if(date >= 23){
+                    stellation = "사수";
+                }else{
+                    stellation = "전갈";
+                }
+                break;
+            case 12:
+                if(date >= 25){
+                    stellation = "염소";
+                }else{
+                    stellation = "사수";
+                }
+                break;
 
         }
 
-        return stellation+"자리";
+        return stellation + "자리";
 
     }
 
     public String getBabyStone(int month){
 
-        String stone=null;
+        String stone = null;
 
         switch(month){
 
-            case 1 : stone = "가넷(진실,우정)"; break;
-            case 2 : stone = "자수정(평화,성실)"; break;
-            case 3 : stone = "아쿠아마린(총명)"; break;
-            case 4 : stone = "다이아몬드(고귀)"; break;
-            case 5 : stone = "에메랄드(행복)"; break;
-            case 6 : stone = "진주(건강,부귀)"; break;
-            case 7 : stone = "루비(용기,정의)"; break;
-            case 8 : stone = "페리도트(화합)"; break;
-            case 9 : stone = "사파이어(진리)"; break;
-            case 10 : stone = "오팔(희망,순결)"; break;
-            case 11 : stone = "토파즈(우정)"; break;
-            case 12 : stone = "터키석(성공,승리)"; break;
+            case 1:
+                stone = "가넷(진실,우정)";
+                break;
+            case 2:
+                stone = "자수정(평화,성실)";
+                break;
+            case 3:
+                stone = "아쿠아마린(총명)";
+                break;
+            case 4:
+                stone = "다이아몬드(고귀)";
+                break;
+            case 5:
+                stone = "에메랄드(행복)";
+                break;
+            case 6:
+                stone = "진주(건강,부귀)";
+                break;
+            case 7:
+                stone = "루비(용기,정의)";
+                break;
+            case 8:
+                stone = "페리도트(화합)";
+                break;
+            case 9:
+                stone = "사파이어(진리)";
+                break;
+            case 10:
+                stone = "오팔(희망,순결)";
+                break;
+            case 11:
+                stone = "토파즈(우정)";
+                break;
+            case 12:
+                stone = "터키석(성공,승리)";
+                break;
 
         }
 
