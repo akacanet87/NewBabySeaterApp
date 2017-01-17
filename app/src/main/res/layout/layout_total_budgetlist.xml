@@ -1,0 +1,75 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/layout_total_budgetlist"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:padding="@dimen/base_margin"
+    app:layout_behavior="@string/appbar_scrolling_view_behavior"
+    tools:context="com.sds.study.newbabyseaterapp.calendar.CalendarActivity">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1"
+        android:orientation="horizontal">
+
+        <TextView
+            style="@style/text_bi20_cenAlign"
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_margin="@dimen/small_margin"
+            android:layout_weight="1"
+            android:background="@color/grayish"
+            android:text="예산"/>
+
+        <TextView
+            style="@style/text_bi20_cenAlign"
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_margin="@dimen/small_margin"
+            android:layout_weight="1"
+            android:background="@color/grayish"
+            android:text="총 지출"/>
+
+    </LinearLayout>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1"
+        android:orientation="horizontal">
+
+        <TextView
+            android:id="@+id/txt_total_budget"
+            style="@style/text_bi14_cenAlign"
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_margin="@dimen/small_margin"
+            android:layout_weight="1"
+            android:background="@drawable/outline"/>
+
+        <TextView
+            android:id="@+id/txt_total_spent"
+            style="@style/text_bi14_cenAlign"
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_margin="@dimen/small_margin"
+            android:layout_weight="1"
+            android:background="@drawable/outline"/>
+
+    </LinearLayout>
+
+    <ListView
+        android:id="@+id/total_budget_list"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="8">
+
+    </ListView>
+
+</LinearLayout>
+

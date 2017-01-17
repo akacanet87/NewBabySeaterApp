@@ -41,7 +41,7 @@ public class BabySeaterSqlHelper extends SQLiteOpenHelper{
 
         picture_sql.append("create table picture(");
         picture_sql.append("picture_id integer primary key autoincrement");
-        picture_sql.append(",img_path blob");
+        picture_sql.append(",img_path text");
         picture_sql.append(");");
 
         sqLiteDatabase.execSQL(picture_sql.toString());
@@ -68,19 +68,34 @@ public class BabySeaterSqlHelper extends SQLiteOpenHelper{
 
         sqLiteDatabase.execSQL(schedule_sql.toString());
 
-        /*StringBuffer budget_sql=new StringBuffer();
+        StringBuffer budget_sql=new StringBuffer();
 
         budget_sql.append("create table budget(");
         budget_sql.append("budget_id integer primary key autoincrement");
         budget_sql.append(",date_id integer");
-        budget_sql.append(",cardcompany varchar(200)");
-        budget_sql.append(",regdate varchar(200)");
-        budget_sql.append(",category varchar(200)");
-        budget_sql.append(",budget varchar(100)");
+        budget_sql.append(",year integer");
+        budget_sql.append(",month integer");
+        budget_sql.append(",date varchar(20)");
+        budget_sql.append(",time varchar(10)");
+        budget_sql.append(",place varchar(50)");
+        budget_sql.append(",cost integer");
+        budget_sql.append(",method integer");
+        budget_sql.append(",bank integer");
         budget_sql.append(",content varchar(100)");
         budget_sql.append(")");
 
-        sqLiteDatabase.execSQL(budget_sql.toString());*/
+        sqLiteDatabase.execSQL(budget_sql.toString());
+
+        StringBuffer total_budget_sql=new StringBuffer();
+
+        total_budget_sql.append("create table total_budget(");
+        total_budget_sql.append("total_budget_id integer primary key autoincrement");
+        total_budget_sql.append(",year integer");
+        total_budget_sql.append(",month integer");
+        total_budget_sql.append(",budget integer default 0");
+        total_budget_sql.append(")");
+
+        sqLiteDatabase.execSQL(total_budget_sql.toString());
 
         StringBuffer school_sql=new StringBuffer();
 
@@ -107,7 +122,8 @@ public class BabySeaterSqlHelper extends SQLiteOpenHelper{
         sqLiteDatabase.execSQL("drop table if exists baby");
         sqLiteDatabase.execSQL("drop table if exists diary");
         sqLiteDatabase.execSQL("drop table if exists schedule");
-        /*sqLiteDatabase.execSQL("drop table if exists budget");*/
+        sqLiteDatabase.execSQL("drop table if exists budget");
+        sqLiteDatabase.execSQL("drop table if exists total_budget");
         sqLiteDatabase.execSQL("drop table if exists school");
         onCreate(sqLiteDatabase);
         Log.d(TAG,"upgrade");

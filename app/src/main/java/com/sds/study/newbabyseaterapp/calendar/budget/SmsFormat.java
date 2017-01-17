@@ -8,70 +8,103 @@ import android.util.Log;
 
 public class SmsFormat{
 
-    String getSms;
     String TAG;
 
-    public SmsFormat(String getSms){
+    private String time;
+    private String card;
+    private String place;
+    private int cost;
 
-        this.getSms = getSms;
+    public SmsFormat(){
+
         TAG = this.getClass().getName()+"/Canet";
 
     }
 
-    public String getCard(String sms, int line ){
+    public void getLines(String sms, int[] lines ){
 
         String[] msgarr = sms.split("\n");
 
-        for(int i=0 ; i<msgarr.length ; i++){
+        String dateTime = msgarr[lines[0]];
+        String cardString = msgarr[lines[1]];
+        String placeString = msgarr[lines[2]];
+        String costString = msgarr[lines[3]];
 
-            Log.d(TAG, i+"번째 라인 : "+msgarr[i]);
+        String[] splitDT = dateTime.split(" ");
 
-        }
+        Log.d(TAG, "time : "+splitDT[1]);
 
-        return msgarr[line];
+        this.setTime(splitDT[1]);
 
-    }
+        if(cardString.contains("[")){
 
-    public String getDate(String sms, int line ){
+            Log.d(TAG, "card : "+cardString.substring(cardString.indexOf("["),cardString.indexOf("]")));
 
-        String[] msgarr = sms.split("\n");
+            this.setCard(cardString.substring(cardString.indexOf("["),cardString.indexOf("]")));
 
-        for(int i=0 ; i<msgarr.length ; i++){
+        }else if(cardString.contains("(")){
 
-            Log.d(TAG, i+"번째 라인 : "+msgarr[i]);
+            Log.d(TAG, "card : "+cardString.substring(0,cardString.indexOf("(")));
 
-        }
+            this.setCard(cardString.substring(0,cardString.indexOf("(")));
 
-        return msgarr[line];
+        }else if(cardString.contains(" ")){
 
-    }
+            String[] splitCard = cardString.split(" ");
 
-    public String getPay(String sms, int line ){
+            Log.d(TAG, "card : "+splitCard[0]);
 
-        String[] msgarr = sms.split("\n");
-
-        for(int i=0 ; i<msgarr.length ; i++){
-
-            Log.d(TAG, i+"번째 라인 : "+msgarr[i]);
-
-        }
-
-        return msgarr[line];
-
-    }
-
-    public String getPlace(String sms, int line ){
-
-        String[] msgarr = sms.split("\n");
-
-        for(int i=0 ; i<msgarr.length ; i++){
-
-            Log.d(TAG, i+"번째 라인 : "+msgarr[i]);
+            this.setCard(splitCard[0]);
 
         }
 
-        return msgarr[line];
+        Log.d(TAG, "place : "+placeString);
+
+        this.setPlace(placeString);
+
+        Log.d(TAG, "cost : "+costString.substring(0,costString.indexOf("원")).replaceAll(",",""));
+
+        this.setCost(Integer.parseInt(costString.substring(0,costString.indexOf("원")).replaceAll(",","")));
 
     }
 
+    public String getTime(){
+
+        return time;
+    }
+
+    public void setTime(String time){
+
+        this.time = time;
+    }
+
+    public String getCard(){
+
+        return card;
+    }
+
+    public void setCard(String card){
+
+        this.card = card;
+    }
+
+    public String getPlace(){
+
+        return place;
+    }
+
+    public void setPlace(String place){
+
+        this.place = place;
+    }
+
+    public int getCost(){
+
+        return cost;
+    }
+
+    public void setCost(int cost){
+
+        this.cost = cost;
+    }
 }

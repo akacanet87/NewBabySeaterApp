@@ -1,0 +1,84 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/popup_budgetsetting"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/grayish"
+    android:gravity="center"
+    android:orientation="vertical">
+
+    <LinearLayout
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:background="@color/whitish"
+        android:orientation="vertical"
+        android:padding="@dimen/base_margin">
+
+        <TextView
+            style="@style/text_bi20_cenAlign"
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:layout_weight="2"
+            android:layout_margin="@dimen/small_margin"
+            android:gravity="center"
+            android:text="이번 달 예산"
+            android:textColor="@color/black"/>
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:layout_weight="3"
+            android:orientation="horizontal">
+
+            <EditText
+                android:id="@+id/popup_txt_budget"
+                style="@style/text_bi20_cenAlign"
+                android:layout_width="0dp"
+                android:layout_height="match_parent"
+                android:layout_margin="@dimen/small_margin"
+                android:layout_weight="7"
+                android:hint="1000000"
+                android:textColor="@color/black"/>
+
+            <TextView
+                style="@style/text_bi20_cenAlign"
+                android:layout_width="0dp"
+                android:layout_height="match_parent"
+                android:layout_margin="@dimen/small_margin"
+                android:layout_weight="1"
+                android:gravity="center"
+                android:text="원"
+                android:textColor="@color/black"/>
+
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:layout_weight="3"
+            android:orientation="horizontal">
+
+            <Button
+                android:id="@+id/btn_popup_budget_save"
+                style="@style/text_bi20"
+                android:layout_width="0dp"
+                android:layout_height="match_parent"
+                android:layout_weight="1"
+                android:onClick="btnCalendarClick"
+                android:text="확인"/>
+
+            <Button
+                android:id="@+id/btn_popup_budget_cancel"
+                style="@style/text_bi20"
+                android:layout_width="0dp"
+                android:layout_height="match_parent"
+                android:layout_weight="1"
+                android:onClick="btnCalendarClick"
+                android:text="취소"/>
+
+        </LinearLayout>
+
+    </LinearLayout>
+
+</LinearLayout>

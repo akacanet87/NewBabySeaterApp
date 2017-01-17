@@ -8,16 +8,13 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.BaseAdapter;
 
-import com.sds.study.newbabyseaterapp.calendar.diary.Diary;
-import com.sds.study.newbabyseaterapp.calendar.diary.DiaryItem;
-
 import java.util.ArrayList;
 
 /**
  * Created by CANET on 2017-01-03.
  */
 
-public class BudgetListAdapter extends BaseAdapter{
+public class BudgetTotalListAdapter extends BaseAdapter{
 
     Context context;
     ArrayList<Budget> daily_budget_list=new ArrayList<>();
@@ -25,7 +22,7 @@ public class BudgetListAdapter extends BaseAdapter{
 
     String TAG;
 
-    public BudgetListAdapter(Context context, SQLiteDatabase db ) {
+    public BudgetTotalListAdapter(Context context, SQLiteDatabase db ) {
 
         this.context = context;
         this.db = db;
@@ -33,9 +30,9 @@ public class BudgetListAdapter extends BaseAdapter{
 
     }
 
-    public void getDailyBudgetList( int date_id ){
+    public void getAllBudgetList(){
 
-        String sql = "select * from budget where date_id="+date_id;
+        String sql = "select * from budget";
 
         Cursor rs = db.rawQuery(sql, null);
 
@@ -44,6 +41,7 @@ public class BudgetListAdapter extends BaseAdapter{
         while (rs.moveToNext()) {
 
             int budget_id = rs.getInt(rs.getColumnIndex("budget_id"));
+            int date_id = rs.getInt(rs.getColumnIndex("date_id"));
             String date = rs.getString(rs.getColumnIndex("date"));
             String time = rs.getString(rs.getColumnIndex("time"));
             String place = rs.getString(rs.getColumnIndex("place"));
@@ -102,10 +100,10 @@ public class BudgetListAdapter extends BaseAdapter{
         //해당 index에 아이템이 이미 채워져 있다면..
         if (convertView != null) {
             view = convertView;
-            BudgetItem item = (BudgetItem) view;
+            BudgetTotalItem item = (BudgetTotalItem) view;
             item.setBudget(budget);
         } else {
-            view = new BudgetItem(context, budget);
+            view = new BudgetTotalItem(context, budget);
             //해당 index에 아무것도 없는 상태라면
         }
 

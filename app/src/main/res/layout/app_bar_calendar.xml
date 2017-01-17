@@ -48,4 +48,19 @@
         layout="@layout/layout_add_schedule"
         android:visibility="gone"/>
 
+    <include
+        android:id="@+id/inc_layout_budget"
+        layout="@layout/layout_add_budget"
+        android:visibility="gone"/>
+
+    <include
+        android:id="@+id/inc_layout_budgetlist"
+        layout="@layout/layout_budgetlist"
+        android:visibility="gone"/>
+
+    <include
+        android:id="@+id/inc_layout_total_budgetlist"
+        layout="@layout/layout_total_budgetlist"
+        android:visibility="gone"/>
+
 </android.support.design.widget.CoordinatorLayout>

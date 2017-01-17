@@ -114,7 +114,7 @@ public class DailyLayout extends LinearLayout{
 
         int diaryCount = calendarDAO.countDailyList(today_date_id);
         int scheduleCount = calendarDAO.countScheduleList(today_date_id);
-        //int budgetCount = calendarDAO.countBudgetList(today_date_id);
+        int budgetCount = calendarDAO.countBudgetList(today_date_id);
 
 
         //Log.d(TAG, "refresh 후의 "+today_date_id+"의 diaryCount는 "+diaryCount);
@@ -126,7 +126,7 @@ public class DailyLayout extends LinearLayout{
 
         setImg(diaryCount, txt_diary, img_icon_diary, R.drawable.icon_diary);
         setImg(scheduleCount, txt_schedule, img_icon_schedule, R.drawable.icon_schedule);
-        //setImg(budgetCount, txt_budget, img_icon_budget, R.drawable.icon_budget);
+        setImg(budgetCount, txt_budget, img_icon_budget, R.drawable.icon_budget);
 
     }
 

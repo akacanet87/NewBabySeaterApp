@@ -183,6 +183,36 @@ public class CalendarDAO{
 
     }
 
+    public void insertBudget(int date_id, int year, int month, String date, String time, String place, int cost, String method, String bank, String content){
+
+        String sql = "insert into budget(date_id,year,month,date,time,place,cost,method,bank,content)";
+        sql += " values(?,?,?,?,?,?,?,?,?,?)";
+
+        db.execSQL(sql, new String[]{
+
+                Integer.toString(date_id), Integer.toString(year), Integer.toString(month), date, time, place, Integer.toString(cost), method, bank, content
+
+        });
+
+        Log.d(TAG, "가계부 등록 완료");
+
+    }
+
+    public void insertTotalBudget(int year, int month, int budget){
+
+        String sql = "insert into total_budget(year, month, budget)";
+        sql += " values(?,?,?)";
+
+        db.execSQL(sql, new String[]{
+
+                Integer.toString(year), Integer.toString(month), Integer.toString(budget)
+
+        });
+
+        Log.d(TAG, "총 예산 등록 완료");
+
+    }
+
     public int countImg(){
 
         int imgCount = 0;
@@ -267,6 +297,74 @@ public class CalendarDAO{
 
     }
 
+    public int countBudgetList(int date_id){
+
+        int budgetCount = 0;
+
+        String sql = "select date_id from budget where date_id=" + date_id;
+
+        Cursor rs = db.rawQuery(sql, null);
+
+        if(rs != null){
+
+            budgetCount = rs.getCount();
+
+            rs.close();
+
+        }
+
+        //Log.d(TAG, "스케줄 카운트 완료");
+
+        return budgetCount;
+
+    }
+
+    public int countTotalBudgetList(){
+
+        int budgetCount = 0;
+
+        String sql = "select total_budget_id from total_budget";
+
+        Cursor rs = db.rawQuery(sql, null);
+
+        if(rs != null){
+
+            budgetCount = rs.getCount();
+
+            rs.close();
+
+        }
+
+        //Log.d(TAG, "스케줄 카운트 완료");
+
+        return budgetCount;
+
+    }
+
+    public int getLastTotalBudget(int month){
+
+        int budget = 0;
+
+        String sql = "select budget from total_budget where total_budget_id = (select max(total_budget_id) from total_budget where month=" + month+ ")";
+
+        Cursor rs = db.rawQuery(sql, null);
+
+        rs.moveToFirst();
+
+        if(rs != null){
+
+            budget = rs.getInt(rs.getColumnIndex("budget"));
+
+            rs.close();
+
+        }
+
+        //Log.d(TAG, "스케줄 카운트 완료");
+
+        return budget;
+
+    }
+
     public void updateDiary(String title, String content, int diary_id){
 
         String sql = "update diary set title=?, content=? where diary_id=?";
@@ -295,6 +393,20 @@ public class CalendarDAO{
 
     }
 
+    public void updateBudget(int date_id, int year, int month, String date, String time, String place, int cost, String method, String bank, String content, int budget_id){
+
+        String sql = "update budget set date_id=?, year=?, month=?, date=?, time=?, place=?, cost=?, method=?, bank=?, content=? where schedule_id=?";
+
+        db.execSQL(sql, new String[]{
+
+                Integer.toString(date_id), Integer.toString(year), Integer.toString(month), date, time, place, Integer.toString(cost), method, bank, content, Integer.toString(budget_id)
+
+        });
+
+        Log.d(TAG, "가계부 수정 완료");
+
+    }
+
     public void deleteDiary(int diary_id){
 
         String sql = "delete from diary where diary_id=?";
@@ -320,6 +432,49 @@ public class CalendarDAO{
         });
 
         Log.d(TAG, "스케줄 삭제 완료");
+
+    }
+
+    public void deleteBudget(int budget_id){
+
+        String sql = "delete from budget where budget_id=?";
+
+        db.execSQL(sql, new String[]{
+
+                Integer.toString(budget_id)
+
+        });
+
+        Log.d(TAG, "가계부 삭제 완료");
+
+    }
+
+    public int getTotalSpent(int year, int month){
+
+        int total=0;
+
+        String sql = "select cost from budget where year="+year+" and month="+month;
+
+        //Log.d(TAG, "id : " + id);
+        //Log.d(TAG, "sql : " + sql);
+
+        Cursor rs = db.rawQuery(sql, null);
+
+        rs.moveToFirst();
+
+        if(rs != null){
+
+            for(rs.moveToFirst(); !rs.isAfterLast(); rs.moveToNext()){
+
+                int cost = rs.getInt(rs.getColumnIndex("cost"));
+                total += cost;
+
+            }
+        }
+
+        //Log.d(TAG, "이름 : " + baby.getName() + "\n성별 : " + baby.getGender() + "\n생년월일 : " + baby.getYear() + "." + baby.getMonth() + "." + baby.getDate() + "\nload baby 완료");
+
+        return total;
 
     }
 

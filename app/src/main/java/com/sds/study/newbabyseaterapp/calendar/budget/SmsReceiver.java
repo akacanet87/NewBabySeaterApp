@@ -14,7 +14,7 @@ public class SmsReceiver extends BroadcastReceiver{
 
     String TAG;
 
-    String[] cardNames = {"KB", "기업"};
+    String[] cardNames = {"국민", "기업", "농협", "우리", "신한", "외환", "하나", "시티"};
 
     public SmsReceiver() {
         TAG=this.getClass().getName()+"/Canet";
@@ -58,13 +58,12 @@ public class SmsReceiver extends BroadcastReceiver{
 
                 }
 
-                if(isSpendSms(sms.toString())){
+                if(isSpendSms(sms.toString())!=null){
 
                     startIntent.putExtra("sms", sms.toString());
+                    startIntent.putExtra("bankName", isSpendSms(sms.toString()));
 
                     context.startActivity(startIntent);
-
-                    msgCut(sms.toString(), context);
 
                 }
 
@@ -72,33 +71,25 @@ public class SmsReceiver extends BroadcastReceiver{
         }
     }
 
-    public void msgCut(String sms,Context context){
+    public String isSpendSms( String sms ){
 
-        String[] msgarr = sms.split("\n");
-
-        for(int i=0 ; i<msgarr.length ; i++){
-
-            Log.d(TAG, i+"번째 라인 : "+msgarr[i]);
-
-        }
-
-    }
-
-    public boolean isSpendSms( String sms ){
-
-        boolean flag=false;
+        String cardName=null;
 
         for( int i=0 ; i<cardNames.length ; i++ ){
 
             if(sms.contains(cardNames[i])){
 
-                flag = true;
+                if(sms.contains("/")&&sms.contains("원")&&sms.contains(":")&&sms.contains(",")){
+
+                    cardName = cardNames[i];
+
+                }
 
             }
 
         }
 
-        return flag;
+        return cardName;
 
     }
 

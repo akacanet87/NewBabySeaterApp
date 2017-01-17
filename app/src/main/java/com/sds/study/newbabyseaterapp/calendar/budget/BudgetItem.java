@@ -21,8 +21,8 @@ import static com.sds.study.newbabyseaterapp.calendar.CalendarActivity.DIARY_NUM
 public class BudgetItem extends LinearLayout{
 
     Budget budget;
-    TextView diary_item_txt_title, diary_item_txt_content;
-    ImageButton btn_delete_diary_item;
+    TextView budget_item_txt_time, budget_item_txt_card, budget_item_txt_place, budget_item_txt_money;
+    ImageButton btn_delete_budget_item;
 
     public BudgetItem(Context context, Budget budget) {
         super(context);
@@ -30,18 +30,20 @@ public class BudgetItem extends LinearLayout{
         LayoutInflater inflater=(LayoutInflater) context.getSystemService(context.LAYOUT_INFLATER_SERVICE);
         inflater.inflate(R.layout.item_budget,this);
 
-        /*diary_item_txt_title=(TextView) this.findViewById(R.id.diary_item_txt_title);
-        diary_item_txt_content=(TextView) this.findViewById(R.id.diary_item_txt_content);
-        btn_delete_diary_item=(ImageButton) this.findViewById(R.id.btn_delete_diary_item);
-        btn_delete_diary_item.setFocusable(false);
+        budget_item_txt_time=(TextView) this.findViewById(R.id.budget_item_txt_time);
+        budget_item_txt_card=(TextView) this.findViewById(R.id.budget_item_txt_card);
+        budget_item_txt_place=(TextView) this.findViewById(R.id.budget_item_txt_place);
+        budget_item_txt_money=(TextView) this.findViewById(R.id.budget_item_txt_money);
+        btn_delete_budget_item=(ImageButton) this.findViewById(R.id.btn_delete_budget_item);
+        btn_delete_budget_item.setFocusable(false);
 
-        DiaryTag diaryTag = new DiaryTag();
-        diaryTag.setView_num(BUDGET_NUM);
-        diaryTag.setDiary(diary);
+        BudgetTag budgetTag = new BudgetTag();
+        budgetTag.setView_num(BUDGET_NUM);
+        budgetTag.setBudget(budget);
 
-        btn_delete_diary_item.setTag(diaryTag);
+        btn_delete_budget_item.setTag(budgetTag);
 
-        setDiary(diary);*/
+        setBudget(budget);
 
     }
 
@@ -51,8 +53,10 @@ public class BudgetItem extends LinearLayout{
 
     public void setBudget(Budget budget) {
 
-        /*diary_item_txt_title.setText(String.valueOf(diary.getTitle()));
-        diary_item_txt_content.setText(String.valueOf(diary.getContent()));*/
+        budget_item_txt_time.setText(String.valueOf(budget.getTime()));
+        budget_item_txt_card.setText(String.valueOf(budget.getBank_name()));
+        budget_item_txt_place.setText(String.valueOf(budget.getPlace()));
+        budget_item_txt_money.setText(String.valueOf(budget.getCost()));
 
     }
 

@@ -40,6 +40,7 @@ import android.view.ViewGroup;
 import android.view.WindowManager;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.AdapterView;
+import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.DatePicker;
 import android.widget.EditText;
@@ -48,13 +49,20 @@ import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.ListView;
 import android.widget.PopupWindow;
+import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.TimePicker;
 import android.widget.Toast;
 
 import com.sds.study.newbabyseaterapp.BabySeaterSqlHelper;
 import com.sds.study.newbabyseaterapp.R;
+import com.sds.study.newbabyseaterapp.calendar.budget.Budget;
+import com.sds.study.newbabyseaterapp.calendar.budget.BudgetItem;
 import com.sds.study.newbabyseaterapp.calendar.budget.BudgetListAdapter;
+import com.sds.study.newbabyseaterapp.calendar.budget.BudgetTag;
+import com.sds.study.newbabyseaterapp.calendar.budget.BudgetTotalItem;
+import com.sds.study.newbabyseaterapp.calendar.budget.BudgetTotalListAdapter;
+import com.sds.study.newbabyseaterapp.calendar.budget.SmsFormat;
 import com.sds.study.newbabyseaterapp.calendar.cal.CalendarFragment;
 import com.sds.study.newbabyseaterapp.calendar.cal.DailyLayout;
 import com.sds.study.newbabyseaterapp.calendar.cal.OnMonthChangeListener;
@@ -95,6 +103,10 @@ public class CalendarActivity extends AppCompatActivity
     DatePicker popup_datepicker;
     Button btn_popup_save, btn_popup_cancel;
 
+    PopupWindow set_budget_pop;
+    TextView popup_txt_budget, txt_total_budget, txt_total_spent;
+    Button btn_popup_budget_save, btn_popup_budget_cancel;
+
     TextView calendar_txt_yearmonth, calendar_txt_thisdate;
 
     EditText diary_txt_title, diary_txt_content;
@@ -104,11 +116,17 @@ public class CalendarActivity extends AppCompatActivity
     EditText schedule_txt_content;
     LinearLayout layout_schedule_timepicker;
 
-    ListView daily_schedule_list, daily_diary_list, daily_budget_list;
+    ArrayAdapter<CharSequence> budgetMethodAdapter;
+    ArrayAdapter<CharSequence> budgetBankAdapter;
+    TextView budget_txt_date, budget_txt_time;
+    Spinner budget_spinner_method, budget_spinner_card;
+    EditText budget_txt_place, budget_txt_money, budget_txt_content;
+
+    ListView daily_schedule_list, daily_diary_list, daily_budget_list, total_budget_list;
 
     Calendar calendar = Calendar.getInstance();
     CoordinatorLayout layoutContainer;
-    View inc_layout_calendar, inc_layout_diarylist, inc_layout_diary, inc_layout_schedulelist, inc_layout_schedule;
+    View inc_layout_calendar, inc_layout_diarylist, inc_layout_diary, inc_layout_schedulelist, inc_layout_schedule, inc_layout_budgetlist, inc_layout_budget, inc_layout_total_budgetlist;
 
     CalendarFragment calendarFragment;
     BabySeaterSqlHelper sqlHelper;    //데이터 베이스 구축
@@ -118,9 +136,11 @@ public class CalendarActivity extends AppCompatActivity
     SchoolDAO schoolDAO;
     Diary diaryDTO;
     Schedule scheduleDTO;
+    Budget budgetDTO;
     DiaryListAdapter diaryListAdapter;
     ScheduleListAdapter scheduleListAdapter;
     BudgetListAdapter budgetListAdapter;
+    BudgetTotalListAdapter budgetTotalListAdapter;
 
     public static int TODAY_YEAR;
     public static int TODAY_MONTH;
@@ -142,6 +162,9 @@ public class CalendarActivity extends AppCompatActivity
     public static final int INSERT_SCHEDULE = 2100;
     public static final int DELETE_SCHEDULE = 2101;
     public static final int UPDATE_SCHEDULE = 2102;
+    public static final int INSERT_BUDGET = 2200;
+    public static final int DELETE_BUDGET = 2201;
+    public static final int UPDATE_BUDGET = 2202;
     public static final int ALARM_BTN = 5000;
     public static final int NEW_ITEM = 3000;
     public static final int EDIT_ITEM = 3001;
@@ -155,6 +178,7 @@ public class CalendarActivity extends AppCompatActivity
     public static final int FROM_ALBUM = 8001;
     public static final int CROP_IMG = 8002;
 
+    String date_name;
     int deviceWidth, deviceHeight;
     int today_year, today_month, today_date;
     int this_hour, this_minute, my_hour, my_minute;
@@ -194,6 +218,31 @@ public class CalendarActivity extends AppCompatActivity
         initImg();
         initBaby();
 
+        Intent intent = getIntent();
+        String sms = intent.getStringExtra("sms");
+        String bankName = intent.getStringExtra("bankName");
+
+        if(sms != null){
+
+            int[] lines = getSmsObject(bankName);
+            SmsFormat smsFormat = new SmsFormat();
+            smsFormat.getLines(sms, lines);
+            setLayoutVisible(inc_layout_calendar, inc_layout_budget);
+
+            budget_txt_date.setText(date_name);
+            budget_txt_time.setText(smsFormat.getTime());
+            budget_txt_place.setText(smsFormat.getPlace());
+            budget_txt_money.setText(Integer.toString(smsFormat.getCost()));
+            budget_spinner_card.setSelection(setSpinnerSelection(smsFormat.getCard()));
+            budget_spinner_method.setSelection(0);
+
+            Log.d(TAG, "smsFormat.getCard() : " + smsFormat.getCard());
+            Log.d(TAG, "smsFormat.getPlace() : " + smsFormat.getPlace());
+            Log.d(TAG, "smsFormat.getTime() : " + smsFormat.getTime());
+            Log.d(TAG, "smsFormat.getCost() : " + smsFormat.getCost());
+
+        }
+
     }
 
     public void initCalendar(){
@@ -201,6 +250,7 @@ public class CalendarActivity extends AppCompatActivity
         TODAY_YEAR = calendar.get(Calendar.YEAR);
         TODAY_MONTH = calendar.get(Calendar.MONTH) + 1;
         TODAY_DATE = calendar.get(Calendar.DAY_OF_MONTH);
+        date_name = TODAY_YEAR + "." + TODAY_MONTH + "." + TODAY_DATE;
 
         imm = (InputMethodManager) getSystemService(INPUT_METHOD_SERVICE);
 
@@ -230,6 +280,9 @@ public class CalendarActivity extends AppCompatActivity
         inc_layout_diary = layoutContainer.findViewById(R.id.inc_layout_diary);
         inc_layout_schedulelist = layoutContainer.findViewById(R.id.inc_layout_schedulelist);
         inc_layout_schedule = layoutContainer.findViewById(R.id.inc_layout_schedule);
+        inc_layout_budgetlist = layoutContainer.findViewById(R.id.inc_layout_budgetlist);
+        inc_layout_budget = layoutContainer.findViewById(R.id.inc_layout_budget);
+        inc_layout_total_budgetlist = layoutContainer.findViewById(R.id.inc_layout_total_budgetlist);
 
         //  layout_calendar의 view들
         calendar_txt_yearmonth = (TextView) findViewById(R.id.calendar_txt_yearmonth);
@@ -257,6 +310,32 @@ public class CalendarActivity extends AppCompatActivity
         //  inc_layout_schedulelist의 view들
         daily_schedule_list = (ListView) inc_layout_schedulelist.findViewById(R.id.daily_schedule_list);
         daily_schedule_list.setOnItemClickListener(this);
+
+        //  inc_layout_budget의 view들
+        budget_txt_date = (TextView) inc_layout_budget.findViewById(R.id.budget_txt_date);
+        budget_txt_time = (TextView) inc_layout_budget.findViewById(R.id.budget_txt_time);
+        budget_txt_place = (EditText) inc_layout_budget.findViewById(R.id.budget_txt_place);
+        budget_txt_money = (EditText) inc_layout_budget.findViewById(R.id.budget_txt_money);
+        budget_txt_content = (EditText) inc_layout_budget.findViewById(R.id.budget_txt_content);
+        budget_spinner_method = (Spinner) inc_layout_budget.findViewById(R.id.budget_spinner_method);
+        budget_spinner_card = (Spinner) inc_layout_budget.findViewById(R.id.budget_spinner_card);
+
+        budgetMethodAdapter = ArrayAdapter.createFromResource(this, R.array.paymentMethod, R.layout.support_simple_spinner_dropdown_item);
+        budgetBankAdapter = ArrayAdapter.createFromResource(this, R.array.bankName, R.layout.support_simple_spinner_dropdown_item);
+        budgetMethodAdapter.setDropDownViewResource(R.layout.support_simple_spinner_dropdown_item);
+        budgetBankAdapter.setDropDownViewResource(R.layout.support_simple_spinner_dropdown_item);
+        budget_spinner_method.setAdapter(budgetMethodAdapter);
+        budget_spinner_card.setAdapter(budgetBankAdapter);
+
+        //  inc_layout_budgetlist의 view들
+        daily_budget_list = (ListView) inc_layout_budgetlist.findViewById(R.id.daily_budget_list);
+        daily_budget_list.setOnItemClickListener(this);
+
+        //  inc_layout_total_budgetlist의 view들
+        total_budget_list = (ListView) inc_layout_total_budgetlist.findViewById(R.id.total_budget_list);
+        txt_total_budget = (TextView) inc_layout_total_budgetlist.findViewById(R.id.txt_total_budget);
+        txt_total_spent = (TextView) inc_layout_total_budgetlist.findViewById(R.id.txt_total_spent);
+        total_budget_list.setOnItemClickListener(this);
 
         //Log.d(TAG, "OneMonthFragment 생성 전");
 
@@ -297,6 +376,7 @@ public class CalendarActivity extends AppCompatActivity
         diaryListAdapter = new DiaryListAdapter(this, db);
         scheduleListAdapter = new ScheduleListAdapter(this, db);
         budgetListAdapter = new BudgetListAdapter(this, db);
+        budgetTotalListAdapter = new BudgetTotalListAdapter(this, db);
 
         /*if(schoolDAO.selectOne()==0){
 
@@ -553,7 +633,22 @@ public class CalendarActivity extends AppCompatActivity
             }else if(inc_layout_schedule.getVisibility() == View.VISIBLE){
 
                 setLayoutVisible(inc_layout_schedule, inc_layout_schedulelist);
-                refreshDiaryContents();
+                refreshScheduleContents();
+
+            }else if(inc_layout_budgetlist.getVisibility() == View.VISIBLE){
+
+                setLayoutVisible(inc_layout_budgetlist, inc_layout_calendar);
+                refreshCalendar();
+
+            }else if(inc_layout_budget.getVisibility() == View.VISIBLE){
+
+                setLayoutVisible(inc_layout_budget, inc_layout_budgetlist);
+                refreshBudgetContents();
+
+            }else if(inc_layout_total_budgetlist.getVisibility() == View.VISIBLE){
+
+                setLayoutVisible(inc_layout_total_budgetlist, inc_layout_calendar);
+                refreshCalendar();
 
             }
 
@@ -617,8 +712,36 @@ public class CalendarActivity extends AppCompatActivity
         switch(item.getItemId()){
 
             case R.id.nav_btn_setbudget:
+                setMonthlyBudget();
                 break;
             case R.id.nav_btn_billslist:
+                Log.d(TAG, "date_id는 " + date_id);
+                setLayoutVisible(inc_layout_calendar, inc_layout_total_budgetlist);
+
+                if(calendarDAO.countTotalBudgetList() == 0){
+
+                    txt_total_budget.setText("예산을 설정해주세요.");
+
+                }else{
+
+                    txt_total_budget.setText(Integer.toString(calendarDAO.getLastTotalBudget(TODAY_MONTH)));
+
+                }
+
+                txt_total_spent.setText(Integer.toString(calendarDAO.getTotalSpent(TODAY_YEAR, TODAY_MONTH)));
+
+                if((calendarDAO.getLastTotalBudget(TODAY_MONTH) - calendarDAO.getTotalSpent(TODAY_YEAR, TODAY_MONTH)) <= 0){
+
+                    txt_total_spent.setBackground(getResources().getDrawable(R.drawable.outline_red));
+
+                }else if((calendarDAO.getLastTotalBudget(TODAY_MONTH) - calendarDAO.getTotalSpent(TODAY_YEAR, TODAY_MONTH)) < 50000){
+
+                    txt_total_spent.setBackground(getResources().getDrawable(R.drawable.outline_pink));
+
+                }
+
+                getAllBudgetList();
+
                 break;
 
         }
@@ -705,6 +828,102 @@ public class CalendarActivity extends AppCompatActivity
             scheduleDTO.setMinute(minute);
             scheduleDTO.setContent(content);
             scheduleDTO.setAlarmOff(isAlarmOff);
+
+        }else if(adapterView == daily_budget_list){
+
+            Log.d(TAG, l + "은 뭘까");
+            Log.d(TAG, i + " 번째 스케줄 아이템 클릭");
+            BudgetItem budgetItem = (BudgetItem) view;
+            Budget budget = budgetItem.getBudget();
+            setLayoutVisible(inc_layout_budgetlist, inc_layout_budget);
+            inc_layout_budget.findViewById(R.id.budget_btn_save).setVisibility(View.GONE);
+            inc_layout_budget.findViewById(R.id.budget_btn_edit).setVisibility(View.VISIBLE);
+
+            int budget_id = budget.getBudget_id();
+            int date_id = budget.getDate_id();
+            String date = budget.getDate();
+            String time = budget.getTime();
+            String payment_method = budget.getPayment_method();
+            String bank_name = budget.getBank_name();
+            String place = budget.getPlace();
+            int cost = budget.getCost();
+            String content = budget.getContent();
+
+            Log.d(TAG, "budget_id : " + budget_id);
+            Log.d(TAG, "date : " + date);
+            Log.d(TAG, "time : " + time);
+            Log.d(TAG, "payment_method : " + payment_method);
+            Log.d(TAG, "bank_name : " + bank_name);
+            Log.d(TAG, "place : " + place);
+            Log.d(TAG, "cost : " + cost);
+
+            budget_txt_date.setText(date);
+            budget_txt_time.setText(time);
+            budget_txt_place.setText(place);
+            budget_txt_money.setText(Integer.toString(cost));
+            budget_txt_content.setText(content);
+            budget_spinner_card.setSelection(setSpinnerSelection(bank_name));
+            budget_spinner_method.setSelection(0);
+
+            budgetDTO = new Budget();
+
+            budgetDTO.setBudget_id(budget_id);
+            budgetDTO.setDate_id(date_id);
+            budgetDTO.setDate(date);
+            budgetDTO.setTime(time);
+            budgetDTO.setCost(cost);
+            budgetDTO.setPlace(place);
+            budgetDTO.setPayment_method(payment_method);
+            budgetDTO.setBank_name(bank_name);
+            budgetDTO.setContent(content);
+
+        }else if(adapterView == total_budget_list){
+
+            Log.d(TAG, l + "은 뭘까");
+            Log.d(TAG, i + " 번째 스케줄 아이템 클릭");
+            BudgetTotalItem budgetTotalItem = (BudgetTotalItem) view;
+            Budget budget = budgetTotalItem.getBudget();
+            setLayoutVisible(inc_layout_total_budgetlist, inc_layout_budget);
+            inc_layout_budget.findViewById(R.id.budget_btn_save).setVisibility(View.GONE);
+            inc_layout_budget.findViewById(R.id.budget_btn_edit).setVisibility(View.VISIBLE);
+
+            int budget_id = budget.getBudget_id();
+            int date_id = budget.getDate_id();
+            String date = budget.getDate();
+            String time = budget.getTime();
+            String payment_method = budget.getPayment_method();
+            String bank_name = budget.getBank_name();
+            String place = budget.getPlace();
+            int cost = budget.getCost();
+            String content = budget.getContent();
+
+            Log.d(TAG, "budget_id : " + budget_id);
+            Log.d(TAG, "date : " + date);
+            Log.d(TAG, "time : " + time);
+            Log.d(TAG, "payment_method : " + payment_method);
+            Log.d(TAG, "bank_name : " + bank_name);
+            Log.d(TAG, "place : " + place);
+            Log.d(TAG, "cost : " + cost);
+
+            budget_txt_date.setText(date);
+            budget_txt_time.setText(time);
+            budget_txt_place.setText(place);
+            budget_txt_money.setText(Integer.toString(cost));
+            budget_txt_content.setText(content);
+            budget_spinner_card.setSelection(setSpinnerSelection(bank_name));
+            budget_spinner_method.setSelection(0);
+
+            budgetDTO = new Budget();
+
+            budgetDTO.setBudget_id(budget_id);
+            budgetDTO.setDate_id(date_id);
+            budgetDTO.setDate(date);
+            budgetDTO.setTime(time);
+            budgetDTO.setCost(cost);
+            budgetDTO.setPlace(place);
+            budgetDTO.setPayment_method(payment_method);
+            budgetDTO.setBank_name(bank_name);
+            budgetDTO.setContent(content);
 
         }
 
@@ -797,6 +1016,19 @@ public class CalendarActivity extends AppCompatActivity
 
                 break;
 
+            case R.id.btn_popup_budget_save:
+
+                saveBudget();
+                set_budget_pop.dismiss();
+
+                break;
+
+            case R.id.btn_popup_budget_cancel:
+
+                set_budget_pop.dismiss();
+
+                break;
+
             case R.id.btn_diary_list:
 
                 Log.d(TAG, "date_id는 " + date_id);
@@ -818,6 +1050,7 @@ public class CalendarActivity extends AppCompatActivity
                 refreshDiaryContents();
                 imm.hideSoftInputFromWindow(inc_layout_diary.findViewById(R.id.diary_txt_title).getWindowToken(), 0);
                 setLayoutVisible(inc_layout_diary, inc_layout_diarylist);
+                getDiaryList(date_id);
 
                 break;
 
@@ -829,6 +1062,7 @@ public class CalendarActivity extends AppCompatActivity
                 inc_layout_diary.findViewById(R.id.diary_btn_save).setVisibility(View.VISIBLE);
                 inc_layout_diary.findViewById(R.id.diary_btn_edit).setVisibility(View.GONE);
                 setLayoutVisible(inc_layout_diary, inc_layout_diarylist);
+                getDiaryList(date_id);
 
                 break;
 
@@ -925,14 +1159,14 @@ public class CalendarActivity extends AppCompatActivity
                 int schedule_id = item_schedule.getSchedule_id();
                 int hour = item_schedule.getHour();
                 int minute = item_schedule.getMinute();
-                int date_id = item_schedule.getDate_id();
+                int schedule_date_id = item_schedule.getDate_id();
                 String content = item_schedule.getContent();
                 boolean isAlarmOff = item_schedule.isAlarmOff();
                 Log.d(TAG, "view_num은 " + scheduleTag.getView_num());
                 Log.d(TAG, "schedule_id는 " + schedule_id);
                 Log.d(TAG, "hour는 " + hour);
                 Log.d(TAG, "minute는 " + minute);
-                Log.d(TAG, "date_id는 " + date_id);
+                Log.d(TAG, "date_id는 " + schedule_date_id);
                 Log.d(TAG, "content는 " + content);
                 Log.d(TAG, "isAlarmOff는 " + isAlarmOff);
                 showConfirmMsg("스케줄 삭제", "정말 삭제하시겠습니까?", DELETE_SCHEDULE, item_schedule);
@@ -959,6 +1193,73 @@ public class CalendarActivity extends AppCompatActivity
                 Log.d(TAG, "view = " + view);
 
                 setAlarmImg(view);
+
+                break;
+
+            case R.id.btn_budget_list:
+
+                Log.d(TAG, "date_id는 " + date_id);
+                setLayoutVisible(inc_layout_calendar, inc_layout_budgetlist);
+                getBudgetList(date_id);
+
+                break;
+
+            case R.id.btn_add_budget_item:
+
+                setLayoutVisible(inc_layout_budgetlist, inc_layout_budget);
+                imm.showSoftInput(inc_layout_budget.findViewById(R.id.budget_txt_content), 0);
+
+                break;
+
+            case R.id.budget_btn_save:
+
+                insertBudgetContents();
+                refreshBudgetContents();
+                imm.hideSoftInputFromWindow(inc_layout_budget.findViewById(R.id.budget_txt_content).getWindowToken(), 0);
+                setLayoutVisible(inc_layout_budget, inc_layout_budgetlist);
+                getBudgetList(date_id);
+
+                break;
+
+            case R.id.budget_btn_edit:
+
+                updateBudgetContents();
+                refreshBudgetContents();
+                imm.hideSoftInputFromWindow(inc_layout_budget.findViewById(R.id.budget_txt_content).getWindowToken(), 0);
+                inc_layout_budget.findViewById(R.id.budget_btn_save).setVisibility(View.VISIBLE);
+                inc_layout_budget.findViewById(R.id.budget_btn_edit).setVisibility(View.GONE);
+                setLayoutVisible(inc_layout_budget, inc_layout_budgetlist);
+                getBudgetList(date_id);
+
+                break;
+
+            case R.id.budget_btn_cancel:
+
+                refreshBudgetContents();
+                imm.hideSoftInputFromWindow(inc_layout_budget.findViewById(R.id.budget_txt_content).getWindowToken(), 0);
+                if(inc_layout_budget.findViewById(R.id.budget_btn_save).getVisibility() == View.GONE){
+
+                    inc_layout_budget.findViewById(R.id.budget_btn_save).setVisibility(View.VISIBLE);
+                    inc_layout_budget.findViewById(R.id.budget_btn_edit).setVisibility(View.GONE);
+
+                }
+                setLayoutVisible(inc_layout_budget, inc_layout_budgetlist);
+                getBudgetList(date_id);
+
+                break;
+
+            case R.id.btn_delete_budget_item:
+
+                Log.d(TAG, "가계부 삭제 버튼 클릭");
+                BudgetTag budgetTag = (BudgetTag) view.getTag();
+                Budget item_budget = budgetTag.getBudget();
+
+                Log.d(TAG, "key_num은 " + item_budget.getBudget_id());
+                Log.d(TAG, "Date_id는 " + item_budget.getDate_id());
+                Log.d(TAG, "Bank_name은 " + item_budget.getBank_name());
+                Log.d(TAG, "Content는 " + item_budget.getContent());
+
+                showConfirmMsg("가계부 삭제", "정말 삭제하시겠습니까?", DELETE_BUDGET, item_budget);
 
                 break;
 
@@ -1067,9 +1368,9 @@ public class CalendarActivity extends AppCompatActivity
             View layout = inflater.inflate(R.layout.layout_babysetting_popup,
                     (ViewGroup) findViewById(R.id.popup_babysetting));
 
-            set_baby_pop = new PopupWindow(layout, deviceWidth, deviceHeight, true);
-            set_baby_pop.showAtLocation(layout, Gravity.CENTER, 0, 0);
-            set_baby_pop.setOutsideTouchable(false);
+            set_budget_pop = new PopupWindow(layout, deviceWidth, deviceHeight, true);
+            set_budget_pop.showAtLocation(layout, Gravity.CENTER, 0, 0);
+            set_budget_pop.setOutsideTouchable(false);
 
             popup_txt_name = (EditText) layout.findViewById(R.id.popup_txt_name);
             popup_txt_gender = (EditText) layout.findViewById(R.id.popup_txt_gender);
@@ -1123,6 +1424,52 @@ public class CalendarActivity extends AppCompatActivity
         nav_txt_babysince.setText(Integer.toString(baby.getD_day()));
         nav_txt_babystellation.setText(baby.getStellation());
         nav_txt_babystone.setText(baby.getStone());
+
+    }
+
+    public void setMonthlyBudget(){
+
+        try{
+            //  LayoutInflater 객체와 시킴
+            LayoutInflater inflater = (LayoutInflater) this
+                    .getSystemService(Context.LAYOUT_INFLATER_SERVICE);
+
+            View layout = inflater.inflate(R.layout.layout_budgetsetting_popup,
+                    (ViewGroup) findViewById(R.id.popup_budgetsetting));
+
+            set_budget_pop = new PopupWindow(layout, deviceWidth, deviceHeight, true);
+            set_budget_pop.showAtLocation(layout, Gravity.CENTER, 0, 0);
+            set_budget_pop.setOutsideTouchable(false);
+
+            popup_txt_budget = (EditText) layout.findViewById(R.id.popup_txt_budget);
+            btn_popup_budget_save = (Button) layout.findViewById(R.id.btn_popup_budget_save);
+            btn_popup_budget_cancel = (Button) layout.findViewById(R.id.btn_popup_budget_cancel);
+
+            if(calendarDAO.countTotalBudgetList() == 0){
+
+                popup_txt_budget.setText(null);
+
+            }else{
+
+                popup_txt_budget.setText(Integer.toString(calendarDAO.getLastTotalBudget(TODAY_MONTH)));
+
+            }
+
+        }catch(Exception e){
+            e.printStackTrace();
+        }
+
+    }
+
+    public void saveBudget(){
+
+        int budget = Integer.parseInt(popup_txt_budget.getText().toString());
+
+        calendarDAO.insertTotalBudget(TODAY_YEAR, TODAY_MONTH, budget);
+
+        popup_txt_budget.setText(null);
+
+        Log.d(TAG, "예산 저장 완료!");
 
     }
 
@@ -1310,6 +1657,24 @@ public class CalendarActivity extends AppCompatActivity
 
     }
 
+    public void getBudgetList(int date_id){
+
+        daily_budget_list.setAdapter(budgetListAdapter);
+        budgetListAdapter.getDailyBudgetList(date_id);
+        budgetListAdapter.notifyDataSetChanged();
+        budgetListAdapter.notifyDataSetInvalidated();
+
+    }
+
+    public void getAllBudgetList(){
+
+        total_budget_list.setAdapter(budgetTotalListAdapter);
+        budgetTotalListAdapter.getAllBudgetList();
+        budgetTotalListAdapter.notifyDataSetChanged();
+        budgetTotalListAdapter.notifyDataSetInvalidated();
+
+    }
+
     public void insertDiaryContents(){
 
         diaryDTO = new Diary();
@@ -1358,6 +1723,25 @@ public class CalendarActivity extends AppCompatActivity
 
     }
 
+    public void insertBudgetContents(){
+
+        budgetDTO = new Budget();
+
+        budgetDTO.setDate_id(date_id);
+        budgetDTO.setYear(TODAY_YEAR);
+        budgetDTO.setMonth(TODAY_MONTH);
+        budgetDTO.setPayment_method(budget_spinner_method.getSelectedItem().toString());
+        budgetDTO.setBank_name(budget_spinner_card.getSelectedItem().toString());
+        budgetDTO.setCost(Integer.parseInt(budget_txt_money.getText().toString()));
+        budgetDTO.setPlace(budget_txt_place.getText().toString());
+        budgetDTO.setContent(budget_txt_content.getText().toString());
+        budgetDTO.setDate(date_name);
+        budgetDTO.setTime(budget_txt_time.getText().toString());
+
+        showConfirmMsg("가계부 등록", "새로운 가계부를 저장하시겠습니까?", INSERT_BUDGET, budgetDTO);
+
+    }
+
     public void updateDiaryContents(){
 
         diaryDTO.setTitle(diary_txt_title.getText().toString());
@@ -1399,6 +1783,24 @@ public class CalendarActivity extends AppCompatActivity
 
     }
 
+    public void updateBudgetContents(){
+
+        budgetDTO.setPayment_method(budget_spinner_method.getSelectedItem().toString());
+        budgetDTO.setBank_name(budget_spinner_card.getSelectedItem().toString());
+        budgetDTO.setCost(Integer.parseInt(budget_txt_money.getText().toString()));
+        budgetDTO.setPlace(budget_txt_place.getText().toString());
+        budgetDTO.setContent(budget_txt_content.getText().toString());
+
+        Log.d(TAG, "수정된 결제방법 : " + budget_spinner_method.getSelectedItem().toString());
+        Log.d(TAG, "수정된 카드 : " + budget_spinner_card.getSelectedItem().toString());
+        Log.d(TAG, "수정된 결제금액 : " + Integer.parseInt(budget_txt_money.getText().toString()));
+        Log.d(TAG, "수정된 결제장소 : " + budget_txt_place.getText().toString());
+        Log.d(TAG, "수정된 메모내용 : " + budget_txt_content.getText().toString());
+
+        showConfirmMsg("가계부 수정", "수정하시겠습니까?", UPDATE_BUDGET, budgetDTO);
+
+    }
+
     public void refreshDiaryContents(){
 
         diary_txt_title.setText("");
@@ -1410,6 +1812,16 @@ public class CalendarActivity extends AppCompatActivity
 
         schedule_txt_content.setText("");
         //setTimePickersTime(this_hour, this_minute);
+
+    }
+
+    public void refreshBudgetContents(){
+
+        budget_txt_content.setText("");
+        budget_txt_date.setText("");
+        budget_txt_time.setText("");
+        budget_txt_place.setText("");
+        budget_txt_money.setText("");
 
     }
 
@@ -1482,6 +1894,7 @@ public class CalendarActivity extends AppCompatActivity
 
     public void refreshCalendar(){
 
+        calendarFragment.horizontalPagerAdapter.notifyDataSetChanged();
 
         final int position = calendarFragment.horizontalPagerAdapter.thisPosition;
         /*final int year = getYear;
@@ -1615,6 +2028,67 @@ public class CalendarActivity extends AppCompatActivity
 
     }
 
+    public void showConfirmMsg(String title, String msg, final int site_id, Budget budget){
+
+        AlertDialog.Builder alert = new AlertDialog.Builder(this);
+
+        final int item_id = budget.getBudget_id();
+        final int item_year = budget.getYear();
+        final int item_month = budget.getMonth();
+        final String item_date = budget.getDate();
+        final String item_time = budget.getTime();
+        final String item_place = budget.getPlace();
+        final int item_cost = budget.getCost();
+        final String item_method = budget.getPayment_method();
+        final String item_bank = budget.getBank_name();
+        final String item_content = budget.getContent();
+
+        alert.setTitle(title).setMessage(msg).setCancelable(false).setPositiveButton("확인",
+                new DialogInterface.OnClickListener(){
+
+                    @Override
+                    public void onClick(DialogInterface dialog, int which){
+                        // 'YES'
+
+                        switch(site_id){
+
+                            case INSERT_BUDGET:
+
+                                calendarDAO.insertBudget(date_id, TODAY_YEAR, TODAY_MONTH, item_date, item_time, item_place, item_cost, item_method, item_bank, item_content);
+                                showAlertMsg("안내", "저장하였습니다");
+                                getBudgetList(date_id);
+
+                                break;
+
+                            case DELETE_BUDGET:
+
+                                calendarDAO.deleteBudget(item_id);
+                                showAlertMsg("안내", "삭제하였습니다");
+                                getBudgetList(date_id);
+                                break;
+
+                            case UPDATE_BUDGET:
+
+                                calendarDAO.updateBudget(date_id, item_year, item_month, item_date, item_time, item_place, item_cost, item_method, item_bank, item_content, item_id);
+                                showAlertMsg("안내", "수정하였습니다");
+                                getBudgetList(date_id);
+                                break;
+
+                        }
+
+                    }
+                }).setNegativeButton("취소",
+                new DialogInterface.OnClickListener(){
+
+                    @Override
+                    public void onClick(DialogInterface dialog, int which){
+                        // 'No'
+                        return;
+                    }
+                }).show();
+
+    }
+
     public void showAlertMsg(String title, String msg){
 
         AlertDialog.Builder alert = new AlertDialog.Builder(this);
@@ -1655,5 +2129,87 @@ public class CalendarActivity extends AppCompatActivity
 
         }
     };
+
+    public int[] getSmsObject(String card){
+
+        int[] lines = new int[4];
+
+        //  lines[0] = int dateTimeLine, lines[1] = int cardLine, lines[2] = int placeLine, lines[3] = int costLine
+
+        switch(card){
+
+            case "국민":
+
+                lines[0] = 3;
+                lines[1] = 1;
+                lines[2] = 5;
+                lines[3] = 4;
+
+                break;
+
+            case "기업":
+
+                lines[0] = 4;
+                lines[1] = 3;
+                lines[2] = 6;
+                lines[3] = 2;
+
+                break;
+
+            case "농협":
+
+                break;
+
+            case "우리":
+
+                break;
+
+            case "신한":
+
+                break;
+
+            case "외환":
+
+                break;
+
+            case "하나":
+
+                break;
+
+            case "시티":
+
+                break;
+
+        }
+
+        return lines;
+
+    }
+
+    public int setSpinnerSelection(String card){
+
+        int cardIndex = 0;
+
+        if(card.contains("국민")){
+            cardIndex = 0;
+        }else if(card.contains("기업")){
+            cardIndex = 1;
+        }else if(card.contains("농협")){
+            cardIndex = 2;
+        }else if(card.contains("우리")){
+            cardIndex = 3;
+        }else if(card.contains("신한")){
+            cardIndex = 4;
+        }else if(card.contains("외환")){
+            cardIndex = 5;
+        }else if(card.contains("하나")){
+            cardIndex = 6;
+        }else if(card.contains("시티")){
+            cardIndex = 7;
+        }
+
+        return cardIndex;
+
+    }
 
 }

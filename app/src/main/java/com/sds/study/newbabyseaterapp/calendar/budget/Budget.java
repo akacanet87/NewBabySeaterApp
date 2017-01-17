@@ -9,9 +9,14 @@ public class Budget{
     private int budget_id;
     private int date_id;
     private int cost;
-    private String payment;
+    private int month;
+    private int year;
+    private String payment_method;
+    private String bank_name;
     private String place;
     private String content;
+    private String date;
+    private String time;
 
     public int getBudget_id(){
 
@@ -43,14 +48,44 @@ public class Budget{
         this.cost = cost;
     }
 
-    public String getPayment(){
+    public int getMonth(){
 
-        return payment;
+        return month;
     }
 
-    public void setPayment(String payment){
+    public void setMonth(int month){
 
-        this.payment = payment;
+        this.month = month;
+    }
+
+    public int getYear(){
+
+        return year;
+    }
+
+    public void setYear(int year){
+
+        this.year = year;
+    }
+
+    public String getPayment_method(){
+
+        return payment_method;
+    }
+
+    public void setPayment_method(String payment_method){
+
+        this.payment_method = payment_method;
+    }
+
+    public String getBank_name(){
+
+        return bank_name;
+    }
+
+    public void setBank_name(String bank_name){
+
+        this.bank_name = bank_name;
     }
 
     public String getPlace(){
@@ -71,5 +106,25 @@ public class Budget{
     public void setContent(String content){
 
         this.content = content;
+    }
+
+    public String getDate(){
+
+        return date;
+    }
+
+    public void setDate(String date){
+
+        this.date = date;
+    }
+
+    public String getTime(){
+
+        return time;
+    }
+
+    public void setTime(String time){
+
+        this.time = time;
     }
 }
