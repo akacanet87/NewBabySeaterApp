@@ -11,8 +11,8 @@ public class Budget{
     private int cost;
     private int month;
     private int year;
-    private int hour;
-    private int minute;
+    private String hour;
+    private String minute;
     private String payment_method;
     private String bank_name;
     private String place;
@@ -69,22 +69,22 @@ public class Budget{
         this.year = year;
     }
 
-    public int getHour(){
+    public String getHour(){
 
         return hour;
     }
 
-    public void setHour(int hour){
+    public void setHour(String hour){
 
         this.hour = hour;
     }
 
-    public int getMinute(){
+    public String getMinute(){
 
         return minute;
     }
 
-    public void setMinute(int minute){
+    public void setMinute(String minute){
 
         this.minute = minute;
     }

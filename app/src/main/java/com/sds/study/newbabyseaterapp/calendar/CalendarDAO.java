@@ -183,14 +183,14 @@ public class CalendarDAO{
 
     }
 
-    public void insertBudget(int date_id, int year, int month, String date, int hour, int minute, String place, int cost, String method, String bank, String content){
+    public void insertBudget(int date_id, int year, int month, String date, String hour, String minute, String place, int cost, String method, String bank, String content){
 
         String sql = "insert into budget(date_id,year,month,date,hour,minute,place,cost,method,bank,content)";
         sql += " values(?,?,?,?,?,?,?,?,?,?,?)";
 
         db.execSQL(sql, new String[]{
 
-                Integer.toString(date_id), Integer.toString(year), Integer.toString(month), date, Integer.toString(hour), Integer.toString(minute), place, Integer.toString(cost), method, bank, content
+                Integer.toString(date_id), Integer.toString(year), Integer.toString(month), date, hour, minute, place, Integer.toString(cost), method, bank, content
 
         });
 
@@ -393,13 +393,13 @@ public class CalendarDAO{
 
     }
 
-    public void updateBudget(int date_id, int year, int month, String date, int hour, int minute, String place, int cost, String method, String bank, String content, int budget_id){
+    public void updateBudget(int date_id, int year, int month, String date, String hour, String minute, String place, int cost, String method, String bank, String content, int budget_id){
 
         String sql = "update budget set date_id=?, year=?, month=?, date=?, hour=?, minute=?, place=?, cost=?, method=?, bank=?, content=? where schedule_id=?";
 
         db.execSQL(sql, new String[]{
 
-                Integer.toString(date_id), Integer.toString(year), Integer.toString(month), date, Integer.toString(hour), Integer.toString(minute), place, Integer.toString(cost), method, bank, content, Integer.toString(budget_id)
+                Integer.toString(date_id), Integer.toString(year), Integer.toString(month), date, hour, minute, place, Integer.toString(cost), method, bank, content, Integer.toString(budget_id)
 
         });
 

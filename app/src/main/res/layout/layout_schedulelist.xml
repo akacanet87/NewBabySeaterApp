@@ -10,12 +10,51 @@
     app:layout_behavior="@string/appbar_scrolling_view_behavior"
     tools:context="com.sds.study.newbabyseaterapp.calendar.CalendarActivity">
 
-    <ListView
-        android:id="@+id/daily_schedule_list"
+    <LinearLayout
         android:layout_width="match_parent"
-        android:layout_height="match_parent">
+        android:layout_height="match_parent"
+        android:orientation="vertical">
 
-    </ListView>
+        <LinearLayout
+            android:orientation="horizontal"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_margin="@dimen/small_margin"
+            android:background="@color/bluish"
+            android:gravity="center">
+
+            <TextView
+                android:layout_margin="@dimen/small_margin"
+                android:id="@+id/schedulelist_txt_date"
+                style="@style/text_bi30_cenAlign"
+                android:layout_width="wrap_content"
+                android:layout_height="match_parent"/>
+
+            <TextView
+                android:layout_margin="@dimen/small_margin"
+                style="@style/text_bi30_cenAlign"
+                android:layout_width="wrap_content"
+                android:layout_height="match_parent"
+                android:text="  일   "/>
+
+            <TextView
+                android:layout_margin="@dimen/small_margin"
+                style="@style/text_bi30_cenAlign"
+                android:layout_width="wrap_content"
+                android:layout_height="match_parent"
+                android:text="스케줄"/>
+
+        </LinearLayout>
+
+        <ListView
+            android:id="@+id/daily_schedule_list"
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:layout_weight="9">
+
+        </ListView>
+
+    </LinearLayout>
 
     <android.support.design.widget.FloatingActionButton
         android:id="@+id/btn_add_schedule_item"

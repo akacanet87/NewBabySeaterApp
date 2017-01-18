@@ -75,7 +75,6 @@ import com.sds.study.newbabyseaterapp.calendar.schedule.Schedule;
 import com.sds.study.newbabyseaterapp.calendar.schedule.ScheduleItem;
 import com.sds.study.newbabyseaterapp.calendar.schedule.ScheduleListAdapter;
 import com.sds.study.newbabyseaterapp.calendar.schedule.ScheduleTag;
-import com.sds.study.newbabyseaterapp.school.SchoolActivity;
 import com.sds.study.newbabyseaterapp.school.SchoolDAO;
 
 import java.io.BufferedInputStream;
@@ -125,6 +124,7 @@ public class CalendarActivity extends AppCompatActivity
     EditText budget_txt_place, budget_txt_money, budget_txt_content;
 
     ListView daily_schedule_list, daily_diary_list, daily_budget_list, total_budget_list;
+    TextView diarylist_txt_date, schedulelist_txt_date, budgetlist_txt_date;
 
     Calendar calendar = Calendar.getInstance();
     CoordinatorLayout layoutContainer;
@@ -250,6 +250,7 @@ public class CalendarActivity extends AppCompatActivity
             insertBudgetContents();
 
             setLayoutVisible(inc_layout_budget, inc_layout_budgetlist);
+            budgetlist_txt_date.setText(Integer.toString(TODAY_DATE));
 
         }
 
@@ -308,6 +309,7 @@ public class CalendarActivity extends AppCompatActivity
 
         //  inc_layout_diarylist의 view들
         daily_diary_list = (ListView) inc_layout_diarylist.findViewById(R.id.daily_diary_list);
+        diarylist_txt_date = (TextView) inc_layout_diarylist.findViewById(R.id.diarylist_txt_date);
         daily_diary_list.setOnItemClickListener(this);
 
         //  inc_layout_schedule의 view들
@@ -319,6 +321,7 @@ public class CalendarActivity extends AppCompatActivity
 
         //  inc_layout_schedulelist의 view들
         daily_schedule_list = (ListView) inc_layout_schedulelist.findViewById(R.id.daily_schedule_list);
+        schedulelist_txt_date = (TextView) inc_layout_schedulelist.findViewById(R.id.schedulelist_txt_date);
         daily_schedule_list.setOnItemClickListener(this);
 
         //  inc_layout_budget의 view들
@@ -340,6 +343,7 @@ public class CalendarActivity extends AppCompatActivity
 
         //  inc_layout_budgetlist의 view들
         daily_budget_list = (ListView) inc_layout_budgetlist.findViewById(R.id.daily_budget_list);
+        budgetlist_txt_date = (TextView) inc_layout_budgetlist.findViewById(R.id.budgetlist_txt_date);
         daily_budget_list.setOnItemClickListener(this);
 
         //  inc_layout_total_budgetlist의 view들
@@ -369,7 +373,7 @@ public class CalendarActivity extends AppCompatActivity
                 calendar_txt_thisdate.setText(Integer.toString(today_date) + " 일");
 
                 date_id = today_year * 10000 + today_month * 100 + today_date;
-                date_name = today_year+"."+today_month+"."+today_date;
+                date_name = today_year + "." + today_month + "." + today_date;
 
             }
 
@@ -854,8 +858,8 @@ public class CalendarActivity extends AppCompatActivity
             int budget_id = budget.getBudget_id();
             int date_id = budget.getDate_id();
             String date = budget.getDate();
-            int hour = budget.getHour();
-            int minute = budget.getMinute();
+            String hour = budget.getHour();
+            String minute = budget.getMinute();
             String payment_method = budget.getPayment_method();
             String bank_name = budget.getBank_name();
             String place = budget.getPlace();
@@ -872,8 +876,8 @@ public class CalendarActivity extends AppCompatActivity
             Log.d(TAG, "cost : " + cost);
 
             budget_txt_date.setText(date);
-            budget_txt_hour.setText(Integer.toString(hour));
-            budget_txt_minute.setText(Integer.toString(minute));
+            budget_txt_hour.setText(hour);
+            budget_txt_minute.setText(minute);
             budget_txt_place.setText(place);
             budget_txt_money.setText(Integer.toString(cost));
             budget_txt_content.setText(content);
@@ -906,8 +910,8 @@ public class CalendarActivity extends AppCompatActivity
             int budget_id = budget.getBudget_id();
             int date_id = budget.getDate_id();
             String date = budget.getDate();
-            int hour = budget.getHour();
-            int minute = budget.getMinute();
+            String hour = budget.getHour();
+            String minute = budget.getMinute();
             String payment_method = budget.getPayment_method();
             String bank_name = budget.getBank_name();
             String place = budget.getPlace();
@@ -924,8 +928,8 @@ public class CalendarActivity extends AppCompatActivity
             Log.d(TAG, "cost : " + cost);
 
             budget_txt_date.setText(date);
-            budget_txt_hour.setText(Integer.toString(hour));
-            budget_txt_minute.setText(Integer.toString(minute));
+            budget_txt_hour.setText(hour);
+            budget_txt_minute.setText(minute);
             budget_txt_place.setText(place);
             budget_txt_money.setText(Integer.toString(cost));
             budget_txt_content.setText(content);
@@ -1015,7 +1019,7 @@ public class CalendarActivity extends AppCompatActivity
 
                 Log.d(TAG, "nav_img_babyprofile 눌림");
 
-                if(checkPermission(Manifest.permission.READ_EXTERNAL_STORAGE, READ_EXST_PERMISSION)&&checkPermission(Manifest.permission.WRITE_EXTERNAL_STORAGE, WRITE_EXST_PERMISSION)){
+                if(checkPermission(Manifest.permission.READ_EXTERNAL_STORAGE, READ_EXST_PERMISSION) && checkPermission(Manifest.permission.WRITE_EXTERNAL_STORAGE, WRITE_EXST_PERMISSION)){
 
                     setBabyImgDialog();
 
@@ -1404,12 +1408,12 @@ public class CalendarActivity extends AppCompatActivity
             btn_popup_save = (Button) layout_babysetting_popup.findViewById(R.id.btn_popup_save);
             btn_popup_cancel = (Button) layout_babysetting_popup.findViewById(R.id.btn_popup_cancel);
 
-            if(calendarDAO.countBaby()!=0){
+            if(calendarDAO.countBaby() != 0){
 
                 Baby baby = calendarDAO.selectBaby(calendarDAO.countBaby());
                 popup_txt_name.setText(baby.getName());
                 popup_txt_gender.setText(baby.getGender());
-                popup_datepicker.updateDate(baby.getYear(),baby.getMonth(),baby.getDate());
+                popup_datepicker.updateDate(baby.getYear(), baby.getMonth(), baby.getDate());
 
             }
 
@@ -1679,6 +1683,7 @@ public class CalendarActivity extends AppCompatActivity
         diaryListAdapter.getDailyDiaryList(date_id);
         diaryListAdapter.notifyDataSetChanged();
         diaryListAdapter.notifyDataSetInvalidated();
+        diarylist_txt_date.setText(Integer.toString(today_date));
         //Log.d(TAG, "다이어리 리스트 연결 완료");
 
     }
@@ -1689,6 +1694,7 @@ public class CalendarActivity extends AppCompatActivity
         scheduleListAdapter.getDailyScheduleList(date_id);
         scheduleListAdapter.notifyDataSetChanged();
         scheduleListAdapter.notifyDataSetInvalidated();
+        schedulelist_txt_date.setText(Integer.toString(today_date));
 
     }
 
@@ -1698,6 +1704,11 @@ public class CalendarActivity extends AppCompatActivity
         budgetListAdapter.getDailyBudgetList(date_id);
         budgetListAdapter.notifyDataSetChanged();
         budgetListAdapter.notifyDataSetInvalidated();
+        if(today_date == 0){
+            budgetlist_txt_date.setText(Integer.toString(TODAY_DATE));
+        }else{
+            budgetlist_txt_date.setText(Integer.toString(today_date));
+        }
 
     }
 
@@ -1766,20 +1777,20 @@ public class CalendarActivity extends AppCompatActivity
         budgetDTO.setYear(TODAY_YEAR);
         budgetDTO.setMonth(TODAY_MONTH);
         budgetDTO.setPayment_method(budget_spinner_method.getSelectedItem().toString());
-        Log.d(TAG,"결제방법 : "+budget_spinner_method.getSelectedItem().toString());
+        Log.d(TAG, "결제방법 : " + budget_spinner_method.getSelectedItem().toString());
         if(budget_spinner_method.getSelectedItem().toString().equals("현금")){
             budgetDTO.setBank_name("");
-            Log.d(TAG,"은행 이름 없음");
+            Log.d(TAG, "은행 이름 없음");
         }else{
             budgetDTO.setBank_name(budget_spinner_card.getSelectedItem().toString());
-            Log.d(TAG,"은행 이름 : "+budget_spinner_card.getSelectedItem().toString());
+            Log.d(TAG, "은행 이름 : " + budget_spinner_card.getSelectedItem().toString());
         }
         budgetDTO.setCost(Integer.parseInt(budget_txt_money.getText().toString()));
         budgetDTO.setPlace(budget_txt_place.getText().toString());
         budgetDTO.setContent(budget_txt_content.getText().toString());
         budgetDTO.setDate(today_name);
-        budgetDTO.setHour(Integer.parseInt(budget_txt_hour.getText().toString()));
-        budgetDTO.setMinute(Integer.parseInt(budget_txt_minute.getText().toString()));
+        budgetDTO.setHour(budget_txt_hour.getText().toString());
+        budgetDTO.setMinute(budget_txt_minute.getText().toString());
 
         showConfirmMsg("가계부 등록", "새로운 가계부를 저장하시겠습니까?", INSERT_BUDGET, budgetDTO);
 
@@ -2080,8 +2091,8 @@ public class CalendarActivity extends AppCompatActivity
         final int item_year = budget.getYear();
         final int item_month = budget.getMonth();
         final String item_date = budget.getDate();
-        final int item_hour = budget.getHour();
-        final int item_minute = budget.getMinute();
+        final String item_hour = budget.getHour();
+        final String item_minute = budget.getMinute();
         final String item_place = budget.getPlace();
         final int item_cost = budget.getCost();
         final String item_method = budget.getPayment_method();
