@@ -55,6 +55,7 @@ import android.widget.TimePicker;
 import android.widget.Toast;
 
 import com.sds.study.newbabyseaterapp.BabySeaterSqlHelper;
+import com.sds.study.newbabyseaterapp.LoadingSchoolActivity;
 import com.sds.study.newbabyseaterapp.R;
 import com.sds.study.newbabyseaterapp.calendar.budget.Budget;
 import com.sds.study.newbabyseaterapp.calendar.budget.BudgetItem;
@@ -95,6 +96,7 @@ public class CalendarActivity extends AppCompatActivity
     LinearLayout layout_nav_header;
     DrawerLayout drawer_layout;
     NavigationView nav_view;
+
     PopupWindow set_baby_pop;
     ImageButton btn_babysetting;
     ImageView nav_img_babyprofile;
@@ -671,7 +673,7 @@ public class CalendarActivity extends AppCompatActivity
 
                 if(isCoarsePassed || isFinePassed){
 
-                    Intent intent = new Intent(this, SchoolActivity.class);
+                    Intent intent = new Intent(this, LoadingSchoolActivity.class);
                     startActivity(intent);
                     Log.d(TAG, "인텐트 넘김");
 
@@ -1365,18 +1367,27 @@ public class CalendarActivity extends AppCompatActivity
             LayoutInflater inflater = (LayoutInflater) this
                     .getSystemService(Context.LAYOUT_INFLATER_SERVICE);
 
-            View layout = inflater.inflate(R.layout.layout_babysetting_popup,
+            View layout_babysetting_popup = inflater.inflate(R.layout.layout_babysetting_popup,
                     (ViewGroup) findViewById(R.id.popup_babysetting));
 
-            set_budget_pop = new PopupWindow(layout, deviceWidth, deviceHeight, true);
-            set_budget_pop.showAtLocation(layout, Gravity.CENTER, 0, 0);
-            set_budget_pop.setOutsideTouchable(false);
+            set_baby_pop = new PopupWindow(layout_babysetting_popup, deviceWidth, deviceHeight, true);
+            set_baby_pop.showAtLocation(layout_babysetting_popup, Gravity.CENTER, 0, 0);
+            set_baby_pop.setOutsideTouchable(false);
 
-            popup_txt_name = (EditText) layout.findViewById(R.id.popup_txt_name);
-            popup_txt_gender = (EditText) layout.findViewById(R.id.popup_txt_gender);
-            popup_datepicker = (DatePicker) layout.findViewById(R.id.popup_datepicker);
-            btn_popup_save = (Button) layout.findViewById(R.id.btn_popup_save);
-            btn_popup_cancel = (Button) layout.findViewById(R.id.btn_popup_cancel);
+            popup_txt_name = (EditText) layout_babysetting_popup.findViewById(R.id.popup_txt_name);
+            popup_txt_gender = (EditText) layout_babysetting_popup.findViewById(R.id.popup_txt_gender);
+            popup_datepicker = (DatePicker) layout_babysetting_popup.findViewById(R.id.popup_datepicker);
+            btn_popup_save = (Button) layout_babysetting_popup.findViewById(R.id.btn_popup_save);
+            btn_popup_cancel = (Button) layout_babysetting_popup.findViewById(R.id.btn_popup_cancel);
+
+            if(calendarDAO.countBaby()!=0){
+
+                Baby baby = calendarDAO.selectBaby(calendarDAO.countBaby());
+                popup_txt_name.setText(baby.getName());
+                popup_txt_gender.setText(baby.getGender());
+                popup_datepicker.updateDate(baby.getYear(),baby.getMonth(),baby.getDate());
+
+            }
 
         }catch(Exception e){
             e.printStackTrace();
@@ -1434,16 +1445,16 @@ public class CalendarActivity extends AppCompatActivity
             LayoutInflater inflater = (LayoutInflater) this
                     .getSystemService(Context.LAYOUT_INFLATER_SERVICE);
 
-            View layout = inflater.inflate(R.layout.layout_budgetsetting_popup,
+            View layout_budgetsetting_popup = inflater.inflate(R.layout.layout_budgetsetting_popup,
                     (ViewGroup) findViewById(R.id.popup_budgetsetting));
 
-            set_budget_pop = new PopupWindow(layout, deviceWidth, deviceHeight, true);
-            set_budget_pop.showAtLocation(layout, Gravity.CENTER, 0, 0);
+            set_budget_pop = new PopupWindow(layout_budgetsetting_popup, deviceWidth, deviceHeight, true);
+            set_budget_pop.showAtLocation(layout_budgetsetting_popup, Gravity.CENTER, 0, 0);
             set_budget_pop.setOutsideTouchable(false);
 
-            popup_txt_budget = (EditText) layout.findViewById(R.id.popup_txt_budget);
-            btn_popup_budget_save = (Button) layout.findViewById(R.id.btn_popup_budget_save);
-            btn_popup_budget_cancel = (Button) layout.findViewById(R.id.btn_popup_budget_cancel);
+            popup_txt_budget = (EditText) layout_budgetsetting_popup.findViewById(R.id.popup_txt_budget);
+            btn_popup_budget_save = (Button) layout_budgetsetting_popup.findViewById(R.id.btn_popup_budget_save);
+            btn_popup_budget_cancel = (Button) layout_budgetsetting_popup.findViewById(R.id.btn_popup_budget_cancel);
 
             if(calendarDAO.countTotalBudgetList() == 0){
 

@@ -41,6 +41,8 @@ public class SchoolActivity extends AppCompatActivity implements OnMapReadyCallb
     double lat;
     double lng;
 
+    boolean isSchoolsNotNull=false;
+
     @Override
     protected void onCreate(Bundle savedInstanceState){
 
@@ -60,11 +62,18 @@ public class SchoolActivity extends AppCompatActivity implements OnMapReadyCallb
 
         this.googleMap = googleMap;
 
-        MapMarkerAsyncTask mapMarkerAsyncTask = new MapMarkerAsyncTask(this, schools, googleMap);
-        mapMarkerAsyncTask.execute();
-
         googleMap.addMarker(new MarkerOptions().title("나의 위치").position(myPoint));
         googleMap.moveCamera(CameraUpdateFactory.newLatLngZoom(myPoint, 15f));
+
+
+        initSchoolList();
+
+        if(schools!=null){
+
+            MapMarkerAsyncTask mapMarkerAsyncTask = new MapMarkerAsyncTask(this, schools, googleMap);
+            mapMarkerAsyncTask.execute();
+
+        }
 
         Log.d(TAG, "onMapReady 호출 완료");
 
@@ -102,10 +111,12 @@ public class SchoolActivity extends AppCompatActivity implements OnMapReadyCallb
         int count = schoolDAO.selectOne();
 
         Log.d(TAG, "selectOne의 크기는 : " + count);
+        Log.d(TAG, "isSchoolsNotNull : " + isSchoolsNotNull);
 
-        if(count>0){
+        if(count>0&&!isSchoolsNotNull){
 
             schools = schoolDAO.selectAllSchools();
+            isSchoolsNotNull=!isSchoolsNotNull;
 
         }
 

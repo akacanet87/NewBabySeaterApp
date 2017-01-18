@@ -73,15 +73,15 @@ public class SchoolDAO{
 
             address = sido + " " + sigungu;
 
-            Log.d(TAG, "주소 없는 곳의 주소 : " + address);
+            //Log.d(TAG, "주소 없는 곳의 주소 : " + address);
 
         }else if(address.startsWith("\"")){
 
-            Log.d(TAG, "기존 address : " + address);
+            //Log.d(TAG, "기존 address : " + address);
 
             address = address.substring(1, address.length() - 1);
 
-            Log.d(TAG, "바뀐 address : " + address);
+            //Log.d(TAG, "바뀐 address : " + address);
 
         }
 
