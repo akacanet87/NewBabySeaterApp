@@ -76,7 +76,8 @@ public class BabySeaterSqlHelper extends SQLiteOpenHelper{
         budget_sql.append(",year integer");
         budget_sql.append(",month integer");
         budget_sql.append(",date varchar(20)");
-        budget_sql.append(",time varchar(10)");
+        budget_sql.append(",hour varchar(10)");
+        budget_sql.append(",minute varchar(10)");
         budget_sql.append(",place varchar(50)");
         budget_sql.append(",cost integer");
         budget_sql.append(",method integer");

@@ -6,7 +6,6 @@ import android.os.Handler;
 import android.support.annotation.Nullable;
 import android.support.v7.app.AppCompatActivity;
 
-import com.sds.study.newbabyseaterapp.calendar.CalendarActivity;
 import com.sds.study.newbabyseaterapp.school.SchoolActivity;
 
 /**
@@ -19,7 +18,7 @@ public class LoadingSchoolActivity extends AppCompatActivity{
     protected void onCreate(@Nullable Bundle savedInstanceState){
 
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.layout_load);
+        setContentView(R.layout.layout_load_map);
 
         Handler handler = new Handler();
         handler.postDelayed(new Runnable() {
@@ -29,7 +28,7 @@ public class LoadingSchoolActivity extends AppCompatActivity{
                 startActivity(intent);
                 finish();
             }
-        }, 5000);
+        }, 30000);
 
     }
 

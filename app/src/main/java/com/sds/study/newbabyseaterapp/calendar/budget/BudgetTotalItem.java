@@ -48,7 +48,7 @@ public class BudgetTotalItem extends LinearLayout{
     public void setBudget(Budget budget) {
 
         budget_total_txt_date.setText(String.valueOf(budget.getDate()));
-        budget_total_txt_time.setText(String.valueOf(budget.getTime()));
+        budget_total_txt_time.setText(String.valueOf(budget.getHour()+":"+budget.getMinute()));
         budget_total_txt_card.setText(String.valueOf(budget.getBank_name()));
         budget_total_txt_place.setText(String.valueOf(budget.getPlace()));
         budget_total_txt_money.setText(String.valueOf(budget.getCost()));

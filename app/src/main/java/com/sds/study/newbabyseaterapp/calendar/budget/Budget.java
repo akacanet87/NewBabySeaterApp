@@ -11,12 +11,13 @@ public class Budget{
     private int cost;
     private int month;
     private int year;
+    private int hour;
+    private int minute;
     private String payment_method;
     private String bank_name;
     private String place;
     private String content;
     private String date;
-    private String time;
 
     public int getBudget_id(){
 
@@ -68,6 +69,26 @@ public class Budget{
         this.year = year;
     }
 
+    public int getHour(){
+
+        return hour;
+    }
+
+    public void setHour(int hour){
+
+        this.hour = hour;
+    }
+
+    public int getMinute(){
+
+        return minute;
+    }
+
+    public void setMinute(int minute){
+
+        this.minute = minute;
+    }
+
     public String getPayment_method(){
 
         return payment_method;
@@ -116,15 +137,5 @@ public class Budget{
     public void setDate(String date){
 
         this.date = date;
-    }
-
-    public String getTime(){
-
-        return time;
-    }
-
-    public void setTime(String time){
-
-        this.time = time;
     }
 }

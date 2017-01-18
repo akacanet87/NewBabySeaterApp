@@ -43,7 +43,8 @@ public class BudgetTotalListAdapter extends BaseAdapter{
             int budget_id = rs.getInt(rs.getColumnIndex("budget_id"));
             int date_id = rs.getInt(rs.getColumnIndex("date_id"));
             String date = rs.getString(rs.getColumnIndex("date"));
-            String time = rs.getString(rs.getColumnIndex("time"));
+            int hour = rs.getInt(rs.getColumnIndex("hour"));
+            int minute = rs.getInt(rs.getColumnIndex("minute"));
             String place = rs.getString(rs.getColumnIndex("place"));
             int cost = rs.getInt(rs.getColumnIndex("cost"));
             String payment_method = rs.getString(rs.getColumnIndex("method"));
@@ -60,7 +61,8 @@ public class BudgetTotalListAdapter extends BaseAdapter{
             dto.setPlace(place);
             dto.setContent(content);
             dto.setDate(date);
-            dto.setTime(time);
+            dto.setHour(hour);
+            dto.setMinute(minute);
 
             daily_budget_list.add(dto);
 

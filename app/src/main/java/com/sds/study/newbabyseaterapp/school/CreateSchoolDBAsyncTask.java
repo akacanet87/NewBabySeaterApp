@@ -221,19 +221,15 @@ public class CreateSchoolDBAsyncTask extends AsyncTask<Integer, Integer, Integer
         }finally{
 
             if(con!=null){
-
                 con.disconnect();
-
             }
 
             if(buffR!=null){
-
                 try{
                     buffR.close();
                 }catch(IOException e){
                     e.printStackTrace();
                 }
-
             }
 
         }

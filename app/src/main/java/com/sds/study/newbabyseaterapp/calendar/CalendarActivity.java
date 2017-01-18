@@ -120,7 +120,7 @@ public class CalendarActivity extends AppCompatActivity
 
     ArrayAdapter<CharSequence> budgetMethodAdapter;
     ArrayAdapter<CharSequence> budgetBankAdapter;
-    TextView budget_txt_date, budget_txt_time;
+    TextView budget_txt_date, budget_txt_hour, budget_txt_minute;
     Spinner budget_spinner_method, budget_spinner_card;
     EditText budget_txt_place, budget_txt_money, budget_txt_content;
 
@@ -180,10 +180,11 @@ public class CalendarActivity extends AppCompatActivity
     public static final int FROM_ALBUM = 8001;
     public static final int CROP_IMG = 8002;
 
-    String date_name;
+    String today_name;
     int deviceWidth, deviceHeight;
     int today_year, today_month, today_date;
     int this_hour, this_minute, my_hour, my_minute;
+    String date_name;
     int date_id;
     int ym_id;
     long day_mills = 86400000;
@@ -231,8 +232,11 @@ public class CalendarActivity extends AppCompatActivity
             smsFormat.getLines(sms, lines);
             setLayoutVisible(inc_layout_calendar, inc_layout_budget);
 
-            budget_txt_date.setText(date_name);
-            budget_txt_time.setText(smsFormat.getTime());
+            budget_txt_date.setText(today_name);
+            String time = smsFormat.getTime();
+            String[] hm = time.split(":");
+            budget_txt_hour.setText(hm[0]);
+            budget_txt_minute.setText(hm[1]);
             budget_txt_place.setText(smsFormat.getPlace());
             budget_txt_money.setText(Integer.toString(smsFormat.getCost()));
             budget_spinner_card.setSelection(setSpinnerSelection(smsFormat.getCard()));
@@ -243,6 +247,10 @@ public class CalendarActivity extends AppCompatActivity
             Log.d(TAG, "smsFormat.getTime() : " + smsFormat.getTime());
             Log.d(TAG, "smsFormat.getCost() : " + smsFormat.getCost());
 
+            insertBudgetContents();
+
+            setLayoutVisible(inc_layout_budget, inc_layout_budgetlist);
+
         }
 
     }
@@ -252,7 +260,7 @@ public class CalendarActivity extends AppCompatActivity
         TODAY_YEAR = calendar.get(Calendar.YEAR);
         TODAY_MONTH = calendar.get(Calendar.MONTH) + 1;
         TODAY_DATE = calendar.get(Calendar.DAY_OF_MONTH);
-        date_name = TODAY_YEAR + "." + TODAY_MONTH + "." + TODAY_DATE;
+        today_name = TODAY_YEAR + "." + TODAY_MONTH + "." + TODAY_DATE;
 
         imm = (InputMethodManager) getSystemService(INPUT_METHOD_SERVICE);
 
@@ -315,7 +323,8 @@ public class CalendarActivity extends AppCompatActivity
 
         //  inc_layout_budget의 view들
         budget_txt_date = (TextView) inc_layout_budget.findViewById(R.id.budget_txt_date);
-        budget_txt_time = (TextView) inc_layout_budget.findViewById(R.id.budget_txt_time);
+        budget_txt_hour = (EditText) inc_layout_budget.findViewById(R.id.budget_txt_hour);
+        budget_txt_minute = (EditText) inc_layout_budget.findViewById(R.id.budget_txt_minute);
         budget_txt_place = (EditText) inc_layout_budget.findViewById(R.id.budget_txt_place);
         budget_txt_money = (EditText) inc_layout_budget.findViewById(R.id.budget_txt_money);
         budget_txt_content = (EditText) inc_layout_budget.findViewById(R.id.budget_txt_content);
@@ -360,6 +369,7 @@ public class CalendarActivity extends AppCompatActivity
                 calendar_txt_thisdate.setText(Integer.toString(today_date) + " 일");
 
                 date_id = today_year * 10000 + today_month * 100 + today_date;
+                date_name = today_year+"."+today_month+"."+today_date;
 
             }
 
@@ -720,6 +730,8 @@ public class CalendarActivity extends AppCompatActivity
                 Log.d(TAG, "date_id는 " + date_id);
                 setLayoutVisible(inc_layout_calendar, inc_layout_total_budgetlist);
 
+                txt_total_spent.setText(Integer.toString(calendarDAO.getTotalSpent(TODAY_YEAR, TODAY_MONTH)));
+
                 if(calendarDAO.countTotalBudgetList() == 0){
 
                     txt_total_budget.setText("예산을 설정해주세요.");
@@ -728,17 +740,15 @@ public class CalendarActivity extends AppCompatActivity
 
                     txt_total_budget.setText(Integer.toString(calendarDAO.getLastTotalBudget(TODAY_MONTH)));
 
-                }
+                    if((calendarDAO.getLastTotalBudget(TODAY_MONTH) - calendarDAO.getTotalSpent(TODAY_YEAR, TODAY_MONTH)) <= 0){
 
-                txt_total_spent.setText(Integer.toString(calendarDAO.getTotalSpent(TODAY_YEAR, TODAY_MONTH)));
+                        txt_total_spent.setBackground(getResources().getDrawable(R.drawable.outline_red));
 
-                if((calendarDAO.getLastTotalBudget(TODAY_MONTH) - calendarDAO.getTotalSpent(TODAY_YEAR, TODAY_MONTH)) <= 0){
+                    }else if((calendarDAO.getLastTotalBudget(TODAY_MONTH) - calendarDAO.getTotalSpent(TODAY_YEAR, TODAY_MONTH)) < 50000){
 
-                    txt_total_spent.setBackground(getResources().getDrawable(R.drawable.outline_red));
+                        txt_total_spent.setBackground(getResources().getDrawable(R.drawable.outline_pink));
 
-                }else if((calendarDAO.getLastTotalBudget(TODAY_MONTH) - calendarDAO.getTotalSpent(TODAY_YEAR, TODAY_MONTH)) < 50000){
-
-                    txt_total_spent.setBackground(getResources().getDrawable(R.drawable.outline_pink));
+                    }
 
                 }
 
@@ -844,7 +854,8 @@ public class CalendarActivity extends AppCompatActivity
             int budget_id = budget.getBudget_id();
             int date_id = budget.getDate_id();
             String date = budget.getDate();
-            String time = budget.getTime();
+            int hour = budget.getHour();
+            int minute = budget.getMinute();
             String payment_method = budget.getPayment_method();
             String bank_name = budget.getBank_name();
             String place = budget.getPlace();
@@ -853,26 +864,29 @@ public class CalendarActivity extends AppCompatActivity
 
             Log.d(TAG, "budget_id : " + budget_id);
             Log.d(TAG, "date : " + date);
-            Log.d(TAG, "time : " + time);
+            Log.d(TAG, "hour : " + hour);
+            Log.d(TAG, "minute : " + minute);
             Log.d(TAG, "payment_method : " + payment_method);
             Log.d(TAG, "bank_name : " + bank_name);
             Log.d(TAG, "place : " + place);
             Log.d(TAG, "cost : " + cost);
 
             budget_txt_date.setText(date);
-            budget_txt_time.setText(time);
+            budget_txt_hour.setText(Integer.toString(hour));
+            budget_txt_minute.setText(Integer.toString(minute));
             budget_txt_place.setText(place);
             budget_txt_money.setText(Integer.toString(cost));
             budget_txt_content.setText(content);
-            budget_spinner_card.setSelection(setSpinnerSelection(bank_name));
             budget_spinner_method.setSelection(0);
+            budget_spinner_card.setSelection(setSpinnerSelection(bank_name));
 
             budgetDTO = new Budget();
 
             budgetDTO.setBudget_id(budget_id);
             budgetDTO.setDate_id(date_id);
             budgetDTO.setDate(date);
-            budgetDTO.setTime(time);
+            budgetDTO.setHour(hour);
+            budgetDTO.setMinute(minute);
             budgetDTO.setCost(cost);
             budgetDTO.setPlace(place);
             budgetDTO.setPayment_method(payment_method);
@@ -892,7 +906,8 @@ public class CalendarActivity extends AppCompatActivity
             int budget_id = budget.getBudget_id();
             int date_id = budget.getDate_id();
             String date = budget.getDate();
-            String time = budget.getTime();
+            int hour = budget.getHour();
+            int minute = budget.getMinute();
             String payment_method = budget.getPayment_method();
             String bank_name = budget.getBank_name();
             String place = budget.getPlace();
@@ -901,14 +916,16 @@ public class CalendarActivity extends AppCompatActivity
 
             Log.d(TAG, "budget_id : " + budget_id);
             Log.d(TAG, "date : " + date);
-            Log.d(TAG, "time : " + time);
+            Log.d(TAG, "hour : " + hour);
+            Log.d(TAG, "minute : " + minute);
             Log.d(TAG, "payment_method : " + payment_method);
             Log.d(TAG, "bank_name : " + bank_name);
             Log.d(TAG, "place : " + place);
             Log.d(TAG, "cost : " + cost);
 
             budget_txt_date.setText(date);
-            budget_txt_time.setText(time);
+            budget_txt_hour.setText(Integer.toString(hour));
+            budget_txt_minute.setText(Integer.toString(minute));
             budget_txt_place.setText(place);
             budget_txt_money.setText(Integer.toString(cost));
             budget_txt_content.setText(content);
@@ -920,7 +937,8 @@ public class CalendarActivity extends AppCompatActivity
             budgetDTO.setBudget_id(budget_id);
             budgetDTO.setDate_id(date_id);
             budgetDTO.setDate(date);
-            budgetDTO.setTime(time);
+            budgetDTO.setHour(hour);
+            budgetDTO.setMinute(minute);
             budgetDTO.setCost(cost);
             budgetDTO.setPlace(place);
             budgetDTO.setPayment_method(payment_method);
@@ -996,9 +1014,12 @@ public class CalendarActivity extends AppCompatActivity
             case R.id.nav_img_babyprofile:
 
                 Log.d(TAG, "nav_img_babyprofile 눌림");
-                checkPermission(Manifest.permission.READ_EXTERNAL_STORAGE, READ_EXST_PERMISSION);
-                checkPermission(Manifest.permission.WRITE_EXTERNAL_STORAGE, WRITE_EXST_PERMISSION);
-                setBabyImgDialog();
+
+                if(checkPermission(Manifest.permission.READ_EXTERNAL_STORAGE, READ_EXST_PERMISSION)&&checkPermission(Manifest.permission.WRITE_EXTERNAL_STORAGE, WRITE_EXST_PERMISSION)){
+
+                    setBabyImgDialog();
+
+                }
 
                 break;
 
@@ -1135,6 +1156,7 @@ public class CalendarActivity extends AppCompatActivity
                 inc_layout_schedule.findViewById(R.id.schedule_btn_save).setVisibility(View.VISIBLE);
                 inc_layout_schedule.findViewById(R.id.schedule_btn_edit).setVisibility(View.GONE);
                 setLayoutVisible(inc_layout_schedule, inc_layout_schedulelist);
+                getScheduleList(date_id);
 
                 break;
 
@@ -1200,6 +1222,7 @@ public class CalendarActivity extends AppCompatActivity
 
             case R.id.btn_budget_list:
 
+                checkPermission(Manifest.permission.RECEIVE_SMS, SMS_PERMISSION);
                 Log.d(TAG, "date_id는 " + date_id);
                 setLayoutVisible(inc_layout_calendar, inc_layout_budgetlist);
                 getBudgetList(date_id);
@@ -1209,6 +1232,7 @@ public class CalendarActivity extends AppCompatActivity
             case R.id.btn_add_budget_item:
 
                 setLayoutVisible(inc_layout_budgetlist, inc_layout_budget);
+                budget_txt_date.setText(date_name);
                 imm.showSoftInput(inc_layout_budget.findViewById(R.id.budget_txt_content), 0);
 
                 break;
@@ -1742,12 +1766,20 @@ public class CalendarActivity extends AppCompatActivity
         budgetDTO.setYear(TODAY_YEAR);
         budgetDTO.setMonth(TODAY_MONTH);
         budgetDTO.setPayment_method(budget_spinner_method.getSelectedItem().toString());
-        budgetDTO.setBank_name(budget_spinner_card.getSelectedItem().toString());
+        Log.d(TAG,"결제방법 : "+budget_spinner_method.getSelectedItem().toString());
+        if(budget_spinner_method.getSelectedItem().toString().equals("현금")){
+            budgetDTO.setBank_name("");
+            Log.d(TAG,"은행 이름 없음");
+        }else{
+            budgetDTO.setBank_name(budget_spinner_card.getSelectedItem().toString());
+            Log.d(TAG,"은행 이름 : "+budget_spinner_card.getSelectedItem().toString());
+        }
         budgetDTO.setCost(Integer.parseInt(budget_txt_money.getText().toString()));
         budgetDTO.setPlace(budget_txt_place.getText().toString());
         budgetDTO.setContent(budget_txt_content.getText().toString());
-        budgetDTO.setDate(date_name);
-        budgetDTO.setTime(budget_txt_time.getText().toString());
+        budgetDTO.setDate(today_name);
+        budgetDTO.setHour(Integer.parseInt(budget_txt_hour.getText().toString()));
+        budgetDTO.setMinute(Integer.parseInt(budget_txt_minute.getText().toString()));
 
         showConfirmMsg("가계부 등록", "새로운 가계부를 저장하시겠습니까?", INSERT_BUDGET, budgetDTO);
 
@@ -1830,7 +1862,8 @@ public class CalendarActivity extends AppCompatActivity
 
         budget_txt_content.setText("");
         budget_txt_date.setText("");
-        budget_txt_time.setText("");
+        budget_txt_hour.setText("");
+        budget_txt_minute.setText("");
         budget_txt_place.setText("");
         budget_txt_money.setText("");
 
@@ -2047,7 +2080,8 @@ public class CalendarActivity extends AppCompatActivity
         final int item_year = budget.getYear();
         final int item_month = budget.getMonth();
         final String item_date = budget.getDate();
-        final String item_time = budget.getTime();
+        final int item_hour = budget.getHour();
+        final int item_minute = budget.getMinute();
         final String item_place = budget.getPlace();
         final int item_cost = budget.getCost();
         final String item_method = budget.getPayment_method();
@@ -2065,7 +2099,7 @@ public class CalendarActivity extends AppCompatActivity
 
                             case INSERT_BUDGET:
 
-                                calendarDAO.insertBudget(date_id, TODAY_YEAR, TODAY_MONTH, item_date, item_time, item_place, item_cost, item_method, item_bank, item_content);
+                                calendarDAO.insertBudget(date_id, TODAY_YEAR, TODAY_MONTH, item_date, item_hour, item_minute, item_place, item_cost, item_method, item_bank, item_content);
                                 showAlertMsg("안내", "저장하였습니다");
                                 getBudgetList(date_id);
 
@@ -2080,7 +2114,7 @@ public class CalendarActivity extends AppCompatActivity
 
                             case UPDATE_BUDGET:
 
-                                calendarDAO.updateBudget(date_id, item_year, item_month, item_date, item_time, item_place, item_cost, item_method, item_bank, item_content, item_id);
+                                calendarDAO.updateBudget(date_id, item_year, item_month, item_date, item_hour, item_minute, item_place, item_cost, item_method, item_bank, item_content, item_id);
                                 showAlertMsg("안내", "수정하였습니다");
                                 getBudgetList(date_id);
                                 break;

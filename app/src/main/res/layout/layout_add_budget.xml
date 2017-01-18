@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout
-    android:id="@+id/layout_add_budget"
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/layout_add_budget"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical"
@@ -74,9 +74,7 @@
                 android:hint="일시"
                 android:padding="@dimen/base_margin"/>
 
-            <TextView
-                android:id="@+id/budget_txt_time"
-                style="@style/text_bi14_cenAlign"
+            <LinearLayout
                 android:layout_width="0dp"
                 android:layout_height="match_parent"
                 android:layout_marginBottom="@dimen/base_margin"
@@ -85,8 +83,38 @@
                 android:layout_marginTop="@dimen/base_margin"
                 android:layout_weight="1"
                 android:background="@color/pinkish"
+                android:orientation="horizontal"
                 android:padding="@dimen/base_margin"
-                android:text="시간"/>
+                android:text="시간">
+
+                <EditText
+                    android:id="@+id/budget_txt_hour"
+                    style="@style/text_bi14_cenAlign"
+                    android:layout_width="0dp"
+                    android:layout_height="match_parent"
+                    android:layout_weight="3"
+                    android:hint="00"
+                    android:inputType="number"
+                    android:maxLength="2"/>
+
+                <TextView
+                    style="@style/text_bi14_cenAlign"
+                    android:layout_width="0dp"
+                    android:layout_height="match_parent"
+                    android:layout_weight="1"
+                    android:text=":"/>
+
+                <EditText
+                    android:id="@+id/budget_txt_minute"
+                    style="@style/text_bi14_cenAlign"
+                    android:layout_width="0dp"
+                    android:layout_height="match_parent"
+                    android:layout_weight="3"
+                    android:hint="00"
+                    android:inputType="number"
+                    android:maxLength="2"/>
+
+            </LinearLayout>
 
         </LinearLayout>
 
@@ -100,8 +128,8 @@
             android:layout_marginRight="@dimen/small_margin"
             android:layout_marginTop="@dimen/base_margin"
             android:background="@color/pinkish"
-            android:padding="@dimen/base_margin"
-            android:hint="장소"/>
+            android:hint="장소"
+            android:padding="@dimen/base_margin"/>
 
         <EditText
             android:id="@+id/budget_txt_money"
@@ -113,8 +141,9 @@
             android:layout_marginRight="@dimen/small_margin"
             android:layout_marginTop="@dimen/base_margin"
             android:background="@color/pinkish"
-            android:padding="@dimen/base_margin"
-            android:hint="금액"/>
+            android:hint="금액"
+            android:inputType="number"
+            android:padding="@dimen/base_margin"/>
 
         <LinearLayout
             android:layout_width="match_parent"

@@ -18,7 +18,7 @@ public class LoadingCalendarActivity extends AppCompatActivity{
     protected void onCreate(@Nullable Bundle savedInstanceState){
 
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.layout_load);
+        setContentView(R.layout.layout_load_main);
 
         Handler handler = new Handler();
         handler.postDelayed(new Runnable() {

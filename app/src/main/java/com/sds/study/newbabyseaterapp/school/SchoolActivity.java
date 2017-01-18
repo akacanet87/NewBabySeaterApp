@@ -15,6 +15,7 @@ import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.SupportMapFragment;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.MarkerOptions;
+import com.sds.study.newbabyseaterapp.LoadingCalendarActivity;
 import com.sds.study.newbabyseaterapp.R;
 import com.sds.study.newbabyseaterapp.calendar.CalendarActivity;
 
@@ -127,7 +128,7 @@ public class SchoolActivity extends AppCompatActivity implements OnMapReadyCallb
     @Override
     public void onBackPressed(){
 
-        Intent intent = new Intent(this, CalendarActivity.class);
+        Intent intent = new Intent(this, LoadingCalendarActivity.class);
         startActivity(intent);
         finish();
 
@@ -139,7 +140,7 @@ public class SchoolActivity extends AppCompatActivity implements OnMapReadyCallb
 
             case R.id.btn_calendar :
 
-                Intent intent = new Intent(this, CalendarActivity.class);
+                Intent intent = new Intent(this, LoadingCalendarActivity.class);
                 startActivity(intent);
                 finish();
 
